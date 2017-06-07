@@ -1,0 +1,20 @@
+{
+  "name": "nationalgas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shaggyshelar/nationalgas.git"
+  },
+  "keywords": [],
+  "author": "Sagar Shelar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shaggyshelar/nationalgas/issues"
+  },
+  "homepage": "https://github.com/shaggyshelar/nationalgas#readme"
+}
