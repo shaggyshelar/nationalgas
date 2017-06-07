@@ -54,7 +54,7 @@ namespace NG.Service
             // appSettings (note: use this during development; in a production environment,
             // it's better to store the connection string in an environment variable)
             var connectionString = Configuration["connectionStrings:libraryDBConnectionString"];
-            services.AddDbContext<ApplicationContext>(o => o.UseSqlServer(connectionString, b => b.MigrationsAssembly("KP.Service")));
+            services.AddDbContext<ApplicationContext>(o => o.UseSqlServer(connectionString, b => b.MigrationsAssembly("NG.Service")));
             services.AddTransient<IdentityInitializer>();
             services.AddTransient<Microsoft.EntityFrameworkCore.DbContext, ApplicationContext>();
             services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<ApplicationContext>();
