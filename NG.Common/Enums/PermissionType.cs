@@ -1,6 +1,6 @@
 namespace NG.Common.Enums
 {
-    public enum Permission
+    public enum PermissionType
     {
         C,
         R,
