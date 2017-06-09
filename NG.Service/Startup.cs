@@ -28,6 +28,7 @@ using NG.Common.Services;
 using NG.Common;
 using NG.Service.Controllers.Departments;
 using NG.Domain.Departments;
+using NLog.Extensions.Logging;
 
 namespace NG.Service
 {
@@ -54,7 +55,7 @@ namespace NG.Service
             // register the DbContext on the container, getting the connection string from
             // appSettings (note: use this during development; in a production environment,
             // it's better to store the connection string in an environment variable)
-            var connectionString = Configuration["connectionStrings:libraryDBConnectionString"];
+            var connectionString = Configuration["connectionStrings:nationalGasDBConnectionString"];
             services.AddDbContext<ApplicationContext>(o => o.UseSqlServer(connectionString, b => b.MigrationsAssembly("NG.Service")));
             services.AddTransient<IdentityInitializer>();
             services.AddTransient<Microsoft.EntityFrameworkCore.DbContext, ApplicationContext>();
@@ -132,8 +133,7 @@ namespace NG.Service
                 options.AddPolicy("IsSuperAdmin", policy => policy.RequireClaim("IsSuperAdmin"));
             });
 
-            // register the repository
-            //services.AddScoped<IAppRepository, AppRepository>();
+            services.AddNodeServices();
 
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
@@ -191,6 +191,7 @@ namespace NG.Service
         {
             loggerFactory.AddConsole();
             loggerFactory.AddDebug(LogLevel.Information);
+            loggerFactory.AddNLog();
             app.UseCors(cfg =>
             {
                 cfg.AllowAnyHeader()
