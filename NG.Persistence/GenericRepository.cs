@@ -24,6 +24,11 @@ namespace NG.Persistence
             return _dbSet.AsNoTracking().ToList();
         }
 
+        public IQueryable<TEntity> Query()
+        {
+            return _dbSet.AsNoTracking();
+        }
+
         public IEnumerable<TEntity> AllInclude
         (params Expression<Func<TEntity, object>>[] includeProperties)
         {
@@ -61,11 +66,11 @@ namespace NG.Persistence
             _context.SaveChanges();
         }
 
-        public void Update(TEntity entity)
+        public bool Update(TEntity entity)
         {
             _dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
-            _context.SaveChanges();
+            return (_context.SaveChanges() >= 0);
         }
 
         public void Delete(Guid id)

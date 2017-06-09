@@ -9,6 +9,8 @@ namespace NG.Common
     {
         IEnumerable<TEntity> All();
 
+        IQueryable<TEntity> Query();
+
         IEnumerable<TEntity> AllInclude(params Expression<Func<TEntity, object>>[] includeProperties);
 
         void Delete(Guid id);
@@ -20,6 +22,6 @@ namespace NG.Common
 
         void Insert(TEntity entity);
 
-        void Update(TEntity entity);
+        bool Update(TEntity entity);
     }
 }
