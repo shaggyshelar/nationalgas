@@ -12,7 +12,7 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceRoot}/NG.Service/bin/Debug/netcoreapp1.1/NG.Service.dll",
             "args": [],
-            "cwd": "${workspaceRoot}/NG.Service",
+            "cwd": "${workspaceRoot}",
             "stopAtEntry": false,
             "internalConsoleOptions": "openOnSessionStart",
             "launchBrowser": {

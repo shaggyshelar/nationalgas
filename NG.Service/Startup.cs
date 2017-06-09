@@ -25,8 +25,9 @@ using System.Reflection;
 using NG.Persistence;
 using NG.Domain.Users;
 using NG.Common.Services;
-using NG.Application.Services;
 using NG.Common;
+using NG.Service.Controllers.Departments;
+using NG.Domain.Departments;
 
 namespace NG.Service
 {
@@ -224,7 +225,7 @@ namespace NG.Service
 
             AutoMapper.Mapper.Initialize(cfg =>
             {
-                // Mapping 
+                cfg.CreateMap<Department, DepartmentDto>();
             });
 
             identitySeeder.Seed().Wait();

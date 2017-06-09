@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using NG.Domain.Departments;
 using NG.Domain.Users;
 
 namespace NG.Persistence
@@ -13,6 +14,8 @@ namespace NG.Persistence
         {
             Database.Migrate();
         }
+
+        public DbSet<Department> Departments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelbuilder)
         {

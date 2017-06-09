@@ -4,15 +4,27 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using NG.Common.Services;
+using NG.Domain.Departments;
+using NG.Service.Controllers.Departments;
 
-namespace NG.Application.Services
+namespace NG.Service
 {
     public class PropertyMappingService : IPropertyMappingService
     {
         private IList<IPropertyMapping> propertyMappings = new List<IPropertyMapping>();
 
+        private Dictionary<string, PropertyMappingValue> _departmentPropertyMapping =
+          new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+          {
+               { "DepartmentID", new PropertyMappingValue(new List<string>() { "DepartmentID" } ) },
+               { "DepartmentName", new PropertyMappingValue(new List<string>() { "DepartmentName" } )},
+               { "DepartmentCode", new PropertyMappingValue(new List<string>() { "DepartmentCode" } )},
+               { "DepartmentDespcription", new PropertyMappingValue(new List<string>() { "DepartmentDespcription" } )}
+          };
+
         public PropertyMappingService()
         {
+            propertyMappings.Add(new PropertyMapping<DepartmentDto, Department>(_departmentPropertyMapping));
         }
 
         public Dictionary<string, PropertyMappingValue> GetPropertyMapping
