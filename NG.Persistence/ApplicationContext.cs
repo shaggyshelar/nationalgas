@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using NG.Domain.Customers;
 using NG.Domain.Departments;
 using NG.Domain.Users;
 
@@ -16,6 +17,7 @@ namespace NG.Persistence
         }
 
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Customer> Customers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelbuilder)
         {

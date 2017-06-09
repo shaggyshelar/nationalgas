@@ -29,6 +29,12 @@ namespace NG.Persistence
             return _dbSet.AsNoTracking();
         }
 
+        public bool EntityExists(Guid id)
+        {
+            Expression<Func<TEntity, bool>> lambda = Utilities.BuildLambdaForFindByKey<TEntity>(id);
+            return _dbSet.Any(lambda);
+        }
+
         public IEnumerable<TEntity> AllInclude
         (params Expression<Func<TEntity, object>>[] includeProperties)
         {
@@ -60,10 +66,10 @@ namespace NG.Persistence
             return results;
         }
 
-        public void Insert(TEntity entity)
+        public bool Insert(TEntity entity)
         {
             _dbSet.Add(entity);
-            _context.SaveChanges();
+            return (_context.SaveChanges() >= 0);
         }
 
         public bool Update(TEntity entity)
@@ -73,11 +79,11 @@ namespace NG.Persistence
             return (_context.SaveChanges() >= 0);
         }
 
-        public void Delete(Guid id)
+        public bool Delete(Guid id)
         {
             var entity = FindByKey(id);
             _dbSet.Remove(entity);
-            _context.SaveChanges();
+            return (_context.SaveChanges() >= 0);
         }
 
         public TEntity FindByKey(Guid id)

@@ -5,7 +5,7 @@ namespace NG.Common.Helpers
         const int maxPageSize = 20;
         public int PageNumber { get; set; } = 1;
 
-        private int _pageSize = 10;
+        protected int _pageSize = 10;
         public virtual int PageSize
         {
             get
