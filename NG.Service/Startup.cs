@@ -227,6 +227,11 @@ namespace NG.Service
             AutoMapper.Mapper.Initialize(cfg =>
             {
                 cfg.CreateMap<Department, DepartmentDto>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerDto>();
+                cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForCreationDto>();
+                cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForUpdationDto>();
             });
 
             identitySeeder.Seed().Wait();

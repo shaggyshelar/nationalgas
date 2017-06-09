@@ -21,31 +21,29 @@ using NG.Service.Helpers;
 using NG.Common.Helpers;
 using NG.Common.DTO;
 using NG.Common;
-using NG.Service.Controllers.Customers;
 
-namespace naturalgas.Controllers.Customers
+namespace NG.Service.Controllers.Customers
 {
     [Route("api/customers")]
     public class CustomerController : Controller
     {
-        //private IAppRepository _appRepository;
         private IUrlHelper _urlHelper;
         private IPropertyMappingService _propertyMappingService;
         private ITypeHelperService _typeHelperService;
         private readonly IHostingEnvironment _hostingEnvironment;
-        
-        //public CustomerController(IAppRepository appRepository,
-        public CustomerController(
-           IUrlHelper urlHelper,
+        private IGenericRepository<Customer> _repo;
+
+        public CustomerController(IUrlHelper urlHelper,
            IPropertyMappingService propertyMappingService,
            ITypeHelperService typeHelperService,
-           IHostingEnvironment hostingEnvironment)
+           IHostingEnvironment hostingEnvironment,
+           IGenericRepository<Customer> repo)
         {
-            //_appRepository = appRepository;
             _urlHelper = urlHelper;
             _propertyMappingService = propertyMappingService;
             _typeHelperService = typeHelperService;
             _hostingEnvironment = hostingEnvironment;
+            _repo = repo;
         }
 
         [HttpGet(Name = "GetCustomers")]
@@ -66,43 +64,51 @@ namespace naturalgas.Controllers.Customers
                 return BadRequest();
             }
 
-            var customerFromRepo = _appRepository.GetCustomers(customerResourceParameters);
-
+            var customerFromRepo = this.GetCustomers(customerResourceParameters);
             var customer = Mapper.Map<IEnumerable<CustomerDto>>(customerFromRepo);
+
+            var collectionBeforePaging =
+                _repo.Query().Where(a => a.IsDelete == false).ApplySort(customerResourceParameters.OrderBy,
+                _propertyMappingService.GetPropertyMapping<CustomerDto, Customer>());
+
+            if (!string.IsNullOrEmpty(customerResourceParameters.SearchQuery))
+            {
+                var searchQueryForWhereClause = customerResourceParameters.SearchQuery
+                    .Trim().ToLowerInvariant();
+
+                collectionBeforePaging = collectionBeforePaging
+                    .Where(a => a.Firstname.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || (a.Email != null
+                        && a.Email.ToLowerInvariant().Contains(searchQueryForWhereClause)));
+            }
+
+            var departmentsFromRepo = PagedList<Customer>.Create(collectionBeforePaging,
+                customerResourceParameters.PageNumber,
+                customerResourceParameters.PageSize);
+
+            var departments = Mapper.Map<IEnumerable<CustomerDto>>(departmentsFromRepo);
+            var shapedDepartments = departments.ShapeData(customerResourceParameters.Fields);
 
             if (mediaType == "application/vnd.marvin.hateoas+json")
             {
-                var paginationMetadata = new
-                {
-                    totalCount = customerFromRepo.TotalCount,
-                    pageSize = customerFromRepo.PageSize,
-                    currentPage = customerFromRepo.CurrentPage,
-                    totalPages = customerFromRepo.TotalPages,
-                };
-
+                var paginationMetadata = departmentsFromRepo.GetHateosMetadata();
                 Response.Headers.Add("X-Pagination",
                     Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
                 Response.Headers.Add("Access-Control-Expose-Headers", "ETag, X-Pagination");
 
-                var links = CreateLinksForCustomer(customerResourceParameters,
-                    customerFromRepo.HasNext, customerFromRepo.HasPrevious);
-
-                var shapedcustomer = customer.ShapeData(customerResourceParameters.Fields);
-
-                var shapedcustomerWithLinks = shapedcustomer.Select(occType =>
-                {
-                    var customerAsDictionary = occType as IDictionary<string, object>;
-                    var customerLinks = CreateLinksForCustomer(
-                        (Guid)customerAsDictionary["Id"], customerResourceParameters.Fields);
-
-                    customerAsDictionary.Add("links", customerLinks);
-
-                    return customerAsDictionary;
-                });
-
+                var links = Utilities.CreateLinks(customerResourceParameters,
+                    departmentsFromRepo.HasNext, departmentsFromRepo.HasPrevious, _urlHelper, "Department");
                 var linkedCollectionResource = new
                 {
-                    value = shapedcustomerWithLinks,
+                    value = shapedDepartments.Select(department =>
+                        {
+                            var departmentAsDictionary = department as IDictionary<string, object>;
+                            var departmentLinks = Utilities.CreateLinks(
+                                (Guid)departmentAsDictionary["Id"], customerResourceParameters.Fields,
+                                _urlHelper, "Department");
+                            departmentAsDictionary.Add("links", departmentLinks);
+                            return departmentAsDictionary;
+                        }),
                     links = links
                 };
 
@@ -110,24 +116,7 @@ namespace naturalgas.Controllers.Customers
             }
             else
             {
-                var previousPageLink = customerFromRepo.HasPrevious ?
-                    CreateCustomerResourceUri(customerResourceParameters,
-                    ResourceUriType.PreviousPage) : null;
-
-                var nextPageLink = customerFromRepo.HasNext ?
-                    CreateCustomerResourceUri(customerResourceParameters,
-                    ResourceUriType.NextPage) : null;
-
-                var paginationMetadata = new
-                {
-                    previousPageLink = previousPageLink,
-                    nextPageLink = nextPageLink,
-                    totalCount = customerFromRepo.TotalCount,
-                    pageSize = customerFromRepo.PageSize,
-                    currentPage = customerFromRepo.CurrentPage,
-                    totalPages = customerFromRepo.TotalPages
-                };
-
+                var paginationMetadata = departmentsFromRepo.GetMetadata(customerResourceParameters, _urlHelper);
                 Response.Headers.Add("X-Pagination",
                     Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
                 Response.Headers.Add("Access-Control-Expose-Headers", "ETag, X-Pagination");
@@ -151,7 +140,7 @@ namespace naturalgas.Controllers.Customers
                 return BadRequest();
             }
 
-            var customers = _appRepository.GetCustomers(customerResourceParameters);
+            var customers = this.GetCustomers(customerResourceParameters);
 
             string sWebRootFolder = _hostingEnvironment.WebRootPath;
             string sFileName = @"ExportedDocuments/CustomerReport.xlsx";
@@ -230,7 +219,7 @@ namespace naturalgas.Controllers.Customers
                 return BadRequest();
             }
 
-            var customers = _appRepository.GetCustomers(customerResourceParameters);
+            var customers = this.GetCustomers(customerResourceParameters);
 
             var htmlContent = CreateHTMLTable(customers);
             var result = await nodeServices.InvokeAsync<byte[]>("./pdfReport", htmlContent);
@@ -247,7 +236,7 @@ namespace naturalgas.Controllers.Customers
         //[Authorize(Policy = Permissions.CustomerRead)]
         public IActionResult GetCustomerAsLookUp([FromHeader(Name = "Accept")] string mediaType)
         {
-            return Ok(_appRepository.GetCustomerAsLookUp());
+            return Ok(this.GetCustomerAsLookUp());
         }
 
         [HttpGet("{id}", Name = "GetCustomer")]
@@ -260,7 +249,7 @@ namespace naturalgas.Controllers.Customers
                 return BadRequest();
             }
 
-            var customerFromRepo = _appRepository.GetCustomer(id);
+            var customerFromRepo = _repo.FindByKey(id);
 
             if (customerFromRepo == null)
             {
@@ -269,7 +258,7 @@ namespace naturalgas.Controllers.Customers
 
             var customer = Mapper.Map<CustomerDto>(customerFromRepo);
 
-            var links = CreateLinksForCustomer(id, fields);
+            var links = Utilities.CreateLinks(id, fields, _urlHelper, "Customer");
 
             var linkedResourceToReturn = customer.ShapeData(fields)
                 as IDictionary<string, object>;
@@ -295,9 +284,7 @@ namespace naturalgas.Controllers.Customers
 
                 SetCreationUserData(customerEntity);
 
-                _appRepository.AddCustomer(customerEntity);
-
-                if (!_appRepository.Save())
+                if (!_repo.Insert(customerEntity))
                 {
                     throw new Exception("Creating an customer failed on save.");
                     // return StatusCode(500, "A problem happened with handling your request.");
@@ -305,7 +292,7 @@ namespace naturalgas.Controllers.Customers
 
                 var customerToReturn = Mapper.Map<CustomerDto>(customerEntity);
 
-                var links = CreateLinksForCustomer(customerToReturn.CustomerID, null);
+                var links = Utilities.CreateLinks(customerToReturn.CustomerID, null, _urlHelper, "Customer");
 
                 var linkedResourceToReturn = customerToReturn.ShapeData(null)
                     as IDictionary<string, object>;
@@ -326,22 +313,11 @@ namespace naturalgas.Controllers.Customers
             }
         }
 
-        [HttpPost("{id}")]
-        public IActionResult BlockCustomerCreation(Guid id)
-        {
-            if (_appRepository.CustomerExists(id))
-            {
-                return new StatusCodeResult(StatusCodes.Status409Conflict);
-            }
-
-            return NotFound();
-        }
-
         [HttpDelete("{id}", Name = "DeleteCustomer")]
         //[Authorize(Policy = Permissions.CustomerDelete)]
         public IActionResult DeleteCustomer(Guid id)
         {
-            var customerFromRepo = _appRepository.GetCustomer(id);
+            var customerFromRepo = _repo.FindByKey(id);
             if (customerFromRepo == null)
             {
                 return NotFound();
@@ -351,7 +327,7 @@ namespace naturalgas.Controllers.Customers
             //....... Soft Delete
             customerFromRepo.IsDelete = true;
 
-            if (!_appRepository.Save())
+            if (!_repo.Update(customerFromRepo))
             {
                 throw new Exception($"Deleting customer {id} failed on save.");
             }
@@ -369,7 +345,7 @@ namespace naturalgas.Controllers.Customers
             }
             if (ModelState.IsValid)
             {
-                var customerFromRepo = _appRepository.GetCustomer(id);
+                var customerFromRepo = _repo.FindByKey(id);
 
                 if (customerFromRepo == null)
                 {
@@ -378,11 +354,9 @@ namespace naturalgas.Controllers.Customers
                 SetItemHistoryData(customer, customerFromRepo);
 
                 Mapper.Map(customer, customerFromRepo);
-                _appRepository.UpdateCustomer(customerFromRepo);
-                if (!_appRepository.Save())
+                if (!_repo.Update(customerFromRepo))
                 {
                     throw new Exception("Updating an customer failed on save.");
-                    // return StatusCode(500, "A problem happened with handling your request.");
                 }
                 return Ok(customerFromRepo);
             }
@@ -405,7 +379,7 @@ namespace naturalgas.Controllers.Customers
                 return BadRequest();
             }
 
-            var bookForAuthorFromRepo = _appRepository.GetCustomer(id);
+            var bookForAuthorFromRepo = _repo.FindByKey(id);
 
             if (bookForAuthorFromRepo == null)
             {
@@ -428,43 +402,41 @@ namespace naturalgas.Controllers.Customers
             SetItemHistoryData(bookToPatch, bookForAuthorFromRepo);
             Mapper.Map(bookToPatch, bookForAuthorFromRepo);
 
-            _appRepository.UpdateCustomer(bookForAuthorFromRepo);
-
-            if (!_appRepository.Save())
+            if (!_repo.Update(bookForAuthorFromRepo))
             {
                 throw new Exception($"Patching  Occurrence Book {id} failed on save.");
             }
             return NoContent();
         }
 
-        [HttpPost("validate", Name = "ValidateNationalId")]
+        //[HttpPost("validate", Name = "ValidateNationalId")]
         //[Authorize(Policy = Permissions.CustomerCreate)]
         // [RequestHeaderMatchesMediaType("Content-Type",
         //     new[] { "application/vnd.marvin.customer.full+json" })]
-        public IActionResult ValidateNationalId([FromBody] CustomerValidationResourceParameters customerValidationResourceParameters)
-        {
-            var customerObj = _appRepository.ValidateNationalId(customerValidationResourceParameters.NationalID);
+        // public IActionResult ValidateNationalId([FromBody] CustomerValidationResourceParameters customerValidationResourceParameters)
+        // {
+        //     var customerObj = _appRepository.ValidateNationalId(customerValidationResourceParameters.NationalID);
 
-            CustomerIPRSDto customerData = new CustomerIPRSDto()
-            {
-                ErrorCode = customerObj.ErrorCode,
-                ErrorMessage = customerObj.ErrorMessage,
-                ErrorOcurred = customerObj.ErrorOcurred,
-                NationalID = customerObj.Serial_Number,
-                SerialNumber = customerObj.Serial_Number,
-                Firstname = customerObj.First_Name,
-                Surname = customerObj.Surname,
-                Othername = customerObj.Other_Name,
-                Gender = customerObj.Gender,
-                DateOfBirth = customerObj.Date_of_Birth != null ? customerObj.Date_of_Birth.Value : DateTime.MinValue,
-                Citizenship = customerObj.Citizenship,
-                Occupation = customerObj.Occupation,
-                Address = customerObj.Place_of_Live,
-                Pin = customerObj.Pin
-            };
+        //     CustomerIPRSDto customerData = new CustomerIPRSDto()
+        //     {
+        //         ErrorCode = customerObj.ErrorCode,
+        //         ErrorMessage = customerObj.ErrorMessage,
+        //         ErrorOcurred = customerObj.ErrorOcurred,
+        //         NationalID = customerObj.Serial_Number,
+        //         SerialNumber = customerObj.Serial_Number,
+        //         Firstname = customerObj.First_Name,
+        //         Surname = customerObj.Surname,
+        //         Othername = customerObj.Other_Name,
+        //         Gender = customerObj.Gender,
+        //         DateOfBirth = customerObj.Date_of_Birth != null ? customerObj.Date_of_Birth.Value : DateTime.MinValue,
+        //         Citizenship = customerObj.Citizenship,
+        //         Occupation = customerObj.Occupation,
+        //         Address = customerObj.Place_of_Live,
+        //         Pin = customerObj.Pin
+        //     };
 
-            return Ok(customerData);
-        }
+        //     return Ok(customerData);
+        // }
 
         [HttpOptions]
         public IActionResult GetCustomerOptions()
@@ -515,114 +487,6 @@ namespace naturalgas.Controllers.Customers
             return table;
         }
 
-        private string CreateCustomerResourceUri(
-            CustomerResourceParameters customerResourceParameters,
-            ResourceUriType type)
-        {
-            switch (type)
-            {
-                case ResourceUriType.PreviousPage:
-                    return _urlHelper.Link("GetCustomer",
-                      new
-                      {
-                          fields = customerResourceParameters.Fields,
-                          orderBy = customerResourceParameters.OrderBy,
-                          searchQuery = customerResourceParameters.SearchQuery,
-                          pageNumber = customerResourceParameters.PageNumber - 1,
-                          pageSize = customerResourceParameters.PageSize
-                      });
-                case ResourceUriType.NextPage:
-                    return _urlHelper.Link("GetCustomer",
-                      new
-                      {
-                          fields = customerResourceParameters.Fields,
-                          orderBy = customerResourceParameters.OrderBy,
-                          searchQuery = customerResourceParameters.SearchQuery,
-                          pageNumber = customerResourceParameters.PageNumber + 1,
-                          pageSize = customerResourceParameters.PageSize
-                      });
-                case ResourceUriType.Current:
-                default:
-                    return _urlHelper.Link("GetCustomer",
-                    new
-                    {
-                        fields = customerResourceParameters.Fields,
-                        orderBy = customerResourceParameters.OrderBy,
-                        searchQuery = customerResourceParameters.SearchQuery,
-                        pageNumber = customerResourceParameters.PageNumber,
-                        pageSize = customerResourceParameters.PageSize
-                    });
-            }
-        }
-
-        private IEnumerable<LinkDto> CreateLinksForCustomer(Guid id, string fields)
-        {
-            var links = new List<LinkDto>();
-
-            if (string.IsNullOrWhiteSpace(fields))
-            {
-                links.Add(
-                  new LinkDto(_urlHelper.Link("GetCustomer", new { id = id }),
-                  "self",
-                  "GET"));
-            }
-            else
-            {
-                links.Add(
-                  new LinkDto(_urlHelper.Link("GetCustomer", new { id = id, fields = fields }),
-                  "self",
-                  "GET"));
-            }
-
-            links.Add(
-              new LinkDto(_urlHelper.Link("DeleteCustomer", new { id = id }),
-              "delete_customer",
-              "DELETE"));
-
-            links.Add(
-              new LinkDto(_urlHelper.Link("CreateBookForCustomer", new { customerId = id }),
-              "create_book_for_customer",
-              "POST"));
-
-            links.Add(
-               new LinkDto(_urlHelper.Link("GetBooksForCustomer", new { customerId = id }),
-               "books",
-               "GET"));
-
-            return links;
-        }
-
-        private IEnumerable<LinkDto> CreateLinksForCustomer(
-            CustomerResourceParameters customerResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            var links = new List<LinkDto>();
-
-            // self 
-            links.Add(
-               new LinkDto(CreateCustomerResourceUri(customerResourceParameters,
-               ResourceUriType.Current)
-               , "self", "GET"));
-
-            if (hasNext)
-            {
-                links.Add(
-                  new LinkDto(CreateCustomerResourceUri(customerResourceParameters,
-                  ResourceUriType.NextPage),
-                  "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                links.Add(
-                    new LinkDto(CreateCustomerResourceUri(customerResourceParameters,
-                    ResourceUriType.PreviousPage),
-                    "previousPage", "GET"));
-            }
-
-            return links;
-        }
-
         private void SetItemHistoryData(CustomerForUpdationDto model, Customer modelRepo)
         {
             model.CreatedOn = modelRepo.CreatedOn;
@@ -630,7 +494,7 @@ namespace naturalgas.Controllers.Customers
                 model.CreatedBy = modelRepo.CreatedBy.Value;
             model.UpdatedOn = DateTime.Now;
             //TODO: Remove this line <model.UpdatedBy = null;>
-            model.UpdatedBy = null;
+            //model.UpdatedBy = null;
             // var CustomerID = User.Claims.FirstOrDefault(cl => cl.Type == "CustomerID");
             // model.UpdatedBy = new Guid(CustomerID.Value);
         }
@@ -643,5 +507,75 @@ namespace naturalgas.Controllers.Customers
             model.UpdatedBy = null;
         }
 
+        private PagedList<Customer> GetCustomers(ExportCustomerResourceParameters CustomersResourceParameters)
+        {
+            var collectionBeforePaging =
+                _repo.Query().Where(c => !c.IsDelete)
+                .ApplySort(CustomersResourceParameters.OrderBy,
+                _propertyMappingService.GetPropertyMapping<CustomerDto, Customer>());
+
+            if (!string.IsNullOrEmpty(CustomersResourceParameters.SearchQuery))
+            {
+                // trim & ignore casing
+                var searchQueryForWhereClause = CustomersResourceParameters.SearchQuery
+                    .Trim().ToLowerInvariant();
+
+                collectionBeforePaging = collectionBeforePaging
+                    .Where(a => a.Firstname.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.Surname.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.NationalID.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.Mobile.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || Convert.ToString(a.DateOfBirth).ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.Email.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.DistributorName.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.DistributorContact.ToLowerInvariant().Contains(searchQueryForWhereClause));
+
+            }
+
+            return PagedList<Customer>.Create(collectionBeforePaging,
+                CustomersResourceParameters.PageNumber,
+                CustomersResourceParameters.PageSize);
+        }
+
+        public PagedList<Customer> GetCustomers(CustomerResourceParameters CustomersResourceParameters)
+        {
+            var collectionBeforePaging =
+                _repo.Query().Where(c => !c.IsDelete)
+                .ApplySort(CustomersResourceParameters.OrderBy,
+                _propertyMappingService.GetPropertyMapping<CustomerDto, Customer>());
+
+            if (!string.IsNullOrEmpty(CustomersResourceParameters.SearchQuery))
+            {
+                // trim & ignore casing
+                var searchQueryForWhereClause = CustomersResourceParameters.SearchQuery
+                    .Trim().ToLowerInvariant();
+
+                collectionBeforePaging = collectionBeforePaging
+                    .Where(a => a.Firstname.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.Surname.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.NationalID.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.Mobile.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || Convert.ToString(a.DateOfBirth).ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.Email.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || a.DistributorName.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || Convert.ToString(a.DistributorContact).ToLowerInvariant().Contains(searchQueryForWhereClause));
+
+            }
+
+            return PagedList<Customer>.Create(collectionBeforePaging,
+                CustomersResourceParameters.PageNumber,
+                CustomersResourceParameters.PageSize);
+        }
+
+        private IEnumerable<LookUpItem> GetCustomerAsLookUp()
+        {
+            return (from a in _repo.Query()
+                    where a.IsDelete == false
+                    select new LookUpItem
+                    {
+                        ID = a.CustomerID,
+                        Name = a.Firstname + " " + a.Surname
+                    }).ToList();
+        }
     }
 }

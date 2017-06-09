@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using NG.Common.Services;
+using NG.Domain.Customers;
 using NG.Domain.Departments;
+using NG.Service.Controllers.Customers;
 using NG.Service.Controllers.Departments;
 
 namespace NG.Service
@@ -22,9 +24,33 @@ namespace NG.Service
                { "DepartmentDespcription", new PropertyMappingValue(new List<string>() { "DepartmentDespcription" } )}
           };
 
+        private Dictionary<string, PropertyMappingValue> _customerPropertyMapping =
+            new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "CustomerID", new PropertyMappingValue(new List<string>() { "CustomerID" } ) },
+            { "NationalID", new PropertyMappingValue(new List<string>() { "NationalID" } ) },
+            { "SerialNumber", new PropertyMappingValue(new List<string>() { "SerialNumber" } ) },
+            { "Firstname", new PropertyMappingValue(new List<string>() { "Firstname" } ) },
+            { "Surname", new PropertyMappingValue(new List<string>() { "Surname" } ) },
+            { "Othername", new PropertyMappingValue(new List<string>() { "Othername" } ) },
+            { "Mobile", new PropertyMappingValue(new List<string>() { "Mobile" } ) },
+            { "Email", new PropertyMappingValue(new List<string>() { "Email" } ) },
+            { "Gender", new PropertyMappingValue(new List<string>() { "Gender" } ) },
+            { "DateOfBirth", new PropertyMappingValue(new List<string>() { "DateOfBirth" } ) },
+            { "Citizenship", new PropertyMappingValue(new List<string>() { "Citizenship" } ) },
+            { "Occupation", new PropertyMappingValue(new List<string>() { "Occupation" } ) },
+            { "Pin", new PropertyMappingValue(new List<string>() { "Pin" } ) },
+            { "Address", new PropertyMappingValue(new List<string>() { "Address" } ) },
+            { "Status", new PropertyMappingValue(new List<string>() { "Status" } ) },
+            { "DistributorName", new PropertyMappingValue(new List<string>() { "DistributorName" } ) },
+            { "DistributorAddress", new PropertyMappingValue(new List<string>() { "DistributorAddress" } ) },
+            { "DistributorContact", new PropertyMappingValue(new List<string>() { "DistributorContact" } ) },
+        };
+
         public PropertyMappingService()
         {
             propertyMappings.Add(new PropertyMapping<DepartmentDto, Department>(_departmentPropertyMapping));
+            propertyMappings.Add(new PropertyMapping<CustomerDto, Customer>(_customerPropertyMapping));
         }
 
         public Dictionary<string, PropertyMappingValue> GetPropertyMapping
