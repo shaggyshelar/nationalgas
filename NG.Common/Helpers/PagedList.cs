@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using NG.Common.Enums;
 
 namespace NG.Common.Helpers
 {
@@ -46,6 +48,38 @@ namespace NG.Common.Helpers
                 return new PagedList<T>(items, count, pageNumber, pageSize);
             }
             return new PagedList<T>(new List<T>(), count, pageNumber, pageSize);
+        }
+
+        public object GetHateosMetadata()
+        {
+            return new
+            {
+                totalCount = this.TotalCount,
+                pageSize = this.PageSize,
+                currentPage = this.CurrentPage,
+                totalPages = this.TotalPages,
+            };
+        }
+
+        public object GetMetadata(BaseResourceParameters resourceParameter, IUrlHelper _urlHelper)
+        {
+            var previousPageLink = this.HasPrevious ?
+                    Utilities.CreateResourceUri(resourceParameter,
+                    ResourceUriType.PreviousPage, _urlHelper, "Departments") : null;
+
+            var nextPageLink = this.HasNext ?
+                Utilities.CreateResourceUri(resourceParameter,
+                ResourceUriType.NextPage, _urlHelper, "Departments") : null;
+
+            return new
+            {
+                previousPageLink = previousPageLink,
+                nextPageLink = nextPageLink,
+                totalCount = this.TotalCount,
+                pageSize = this.PageSize,
+                currentPage = this.CurrentPage,
+                totalPages = this.TotalPages
+            };
         }
     }
 }

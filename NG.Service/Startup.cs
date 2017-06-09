@@ -25,7 +25,6 @@ using System.Reflection;
 using NG.Persistence;
 using NG.Domain.Users;
 using NG.Common.Services;
-using NG.Application.Services;
 using NG.Common;
 
 namespace NG.Service

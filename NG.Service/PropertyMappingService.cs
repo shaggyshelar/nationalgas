@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using NG.Common.Services;
 
-namespace NG.Application.Services
+namespace NG.Service
 {
     public class PropertyMappingService : IPropertyMappingService
     {
