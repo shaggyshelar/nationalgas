@@ -29,6 +29,7 @@ using NG.Common;
 using NG.Service.Controllers.Departments;
 using NG.Domain.Departments;
 using NLog.Extensions.Logging;
+using AutoMapper;
 
 namespace NG.Service
 {
@@ -55,6 +56,22 @@ namespace NG.Service
             // register the DbContext on the container, getting the connection string from
             // appSettings (note: use this during development; in a production environment,
             // it's better to store the connection string in an environment variable)
+
+            var mapperConfig = new AutoMapper.MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Department, DepartmentDto>();
+                cfg.CreateMap<DepartmentForUpdationDto, Department>();
+                cfg.CreateMap<Department, DepartmentForUpdationDto>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerDto>();
+                cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForCreationDto>();
+                cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForUpdationDto>();
+            });
+            var mapper = mapperConfig.CreateMapper();
+            services.AddSingleton(mapper);
+
+
             var connectionString = Configuration["connectionStrings:nationalGasDBConnectionString"];
             services.AddDbContext<ApplicationContext>(o => o.UseSqlServer(connectionString, b => b.MigrationsAssembly("NG.Service")));
             services.AddTransient<IdentityInitializer>();
@@ -224,17 +241,18 @@ namespace NG.Service
                 });
             }
 
-            AutoMapper.Mapper.Initialize(cfg =>
-            {
-                cfg.CreateMap<Department, DepartmentDto>();
-                cfg.CreateMap<DepartmentForUpdationDto, Department>();
-                cfg.CreateMap<Department, DepartmentForUpdationDto>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerDto>();
-                cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForCreationDto>();
-                cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForUpdationDto>();
-            });
+            // AutoMapper.Mapper.Initialize(cfg =>
+            // {
+            //     cfg.CreateMap<Department, DepartmentDto>();
+            //     cfg.CreateMap<DepartmentForUpdationDto, Department>();
+            //     cfg.CreateMap<Department, DepartmentForUpdationDto>();
+            //     cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerDto>();
+            //     cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
+            //     cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForCreationDto>();
+            //     cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
+            //     cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForUpdationDto>();
+            // });
+
 
             identitySeeder.Seed().Wait();
             libraryContext.EnsureSeedDataForContext();

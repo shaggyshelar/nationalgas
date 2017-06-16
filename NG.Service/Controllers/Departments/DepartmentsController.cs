@@ -24,16 +24,19 @@ namespace NG.Service.Controllers
         private ITypeHelperService _typeHelperService;
 
         private IGenericRepository<Department> _repo;
+        private IMapper _mapper;
 
         public DepartmentsController(IUrlHelper urlHelper,
             IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
-            IGenericRepository<Department> repo)
+            IGenericRepository<Department> repo,
+            IMapper mapper)
         {
             _urlHelper = urlHelper;
             _propertyMappingService = propertyMappingService;
             _typeHelperService = typeHelperService;
             _repo = repo;
+            _mapper = mapper;
         }
 
 
@@ -73,7 +76,7 @@ namespace NG.Service.Controllers
                 departmentsResourceParameters.PageNumber,
                 departmentsResourceParameters.PageSize);
 
-            var departments = Mapper.Map<IEnumerable<DepartmentDto>>(departmentsFromRepo);
+            var departments = _mapper.Map<IEnumerable<DepartmentDto>>(departmentsFromRepo);
             var shapedDepartments = departments.ShapeData(departmentsResourceParameters.Fields);
 
             if (mediaType == "application/vnd.marvin.hateoas+json")
@@ -123,7 +126,7 @@ namespace NG.Service.Controllers
                 return NotFound();
             }
 
-            var department = Mapper.Map<DepartmentDto>(departmentFromRepo);
+            var department = _mapper.Map<DepartmentDto>(departmentFromRepo);
 
             var links = Utilities.CreateLinks(id, fields, _urlHelper, "Department");
 
@@ -168,7 +171,7 @@ namespace NG.Service.Controllers
                 return NotFound();
             }
 
-            Mapper.Map(department, departmentRepo);
+            _mapper.Map(department, departmentRepo);
             if (!_repo.Update(departmentRepo))
             {
                 throw new Exception("Updating an department failed on save.");
@@ -193,7 +196,7 @@ namespace NG.Service.Controllers
                 return NotFound();
             }
 
-            var departmentToPatch = Mapper.Map<DepartmentForUpdationDto>(departmentFromRepo);
+            var departmentToPatch = _mapper.Map<DepartmentForUpdationDto>(departmentFromRepo);
             patchDoc.ApplyTo(departmentToPatch, ModelState);
 
             TryValidateModel(departmentToPatch);
@@ -203,7 +206,7 @@ namespace NG.Service.Controllers
                 return new UnprocessableEntityObjectResult(ModelState);
             }
 
-            Mapper.Map(departmentToPatch, departmentFromRepo);
+            _mapper.Map(departmentToPatch, departmentFromRepo);
 
             if (!_repo.Update(departmentFromRepo))
             {
