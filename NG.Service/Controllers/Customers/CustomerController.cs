@@ -21,6 +21,7 @@ using NG.Service.Helpers;
 using NG.Common.Helpers;
 using NG.Common.DTO;
 using NG.Common;
+using Newtonsoft.Json;
 
 namespace NG.Service.Controllers.Customers
 {
@@ -409,34 +410,76 @@ namespace NG.Service.Controllers.Customers
             return NoContent();
         }
 
-        //[HttpPost("validate", Name = "ValidateNationalId")]
+        [HttpPost("validate", Name = "ValidateNationalId")]
         //[Authorize(Policy = Permissions.CustomerCreate)]
         // [RequestHeaderMatchesMediaType("Content-Type",
         //     new[] { "application/vnd.marvin.customer.full+json" })]
-        // public IActionResult ValidateNationalId([FromBody] CustomerValidationResourceParameters customerValidationResourceParameters)
-        // {
-        //     var customerObj = _appRepository.ValidateNationalId(customerValidationResourceParameters.NationalID);
+        public IActionResult ValidateNationalId([FromBody] CustomerValidationResourceParameters customerValidationResourceParameters)
+        {
+            /*
+                TODO: 
+                    1. Move in repository
+                    2. Add service call (remove dummy data)
+            */
+            string response = GetCustomerByNationalID(customerValidationResourceParameters.NationalID);
+            NationalIDResponse customerObj = GetCustomerFromResponse(response);
 
-        //     CustomerIPRSDto customerData = new CustomerIPRSDto()
-        //     {
-        //         ErrorCode = customerObj.ErrorCode,
-        //         ErrorMessage = customerObj.ErrorMessage,
-        //         ErrorOcurred = customerObj.ErrorOcurred,
-        //         NationalID = customerObj.Serial_Number,
-        //         SerialNumber = customerObj.Serial_Number,
-        //         Firstname = customerObj.First_Name,
-        //         Surname = customerObj.Surname,
-        //         Othername = customerObj.Other_Name,
-        //         Gender = customerObj.Gender,
-        //         DateOfBirth = customerObj.Date_of_Birth != null ? customerObj.Date_of_Birth.Value : DateTime.MinValue,
-        //         Citizenship = customerObj.Citizenship,
-        //         Occupation = customerObj.Occupation,
-        //         Address = customerObj.Place_of_Live,
-        //         Pin = customerObj.Pin
-        //     };
+            CustomerIPRSDto customerData = new CustomerIPRSDto()
+            {
+                ErrorCode = customerObj.ErrorCode,
+                ErrorMessage = customerObj.ErrorMessage,
+                ErrorOcurred = customerObj.ErrorOcurred,
+                NationalID = customerObj.Serial_Number,
+                SerialNumber = customerObj.Serial_Number,
+                Firstname = customerObj.First_Name,
+                Surname = customerObj.Surname,
+                Othername = customerObj.Other_Name,
+                Gender = customerObj.Gender,
+                DateOfBirth = customerObj.Date_of_Birth != null ? customerObj.Date_of_Birth.Value : DateTime.MinValue,
+                Citizenship = customerObj.Citizenship,
+                Occupation = customerObj.Occupation,
+                Address = customerObj.Place_of_Live,
+                Pin = customerObj.Pin
+            };
 
-        //     return Ok(customerData);
-        // }
+            return Ok(customerData);
+        }
+
+        [HttpGet("report", Name = "GetCustomerRegistrationResults")]
+        public IActionResult GetCustomerRegistrationResults(CustomerRegistrationReportParameters customerRegistrationReportParameters)
+        {
+            IEnumerable<CustomerRegistrationReportDto> customerReports = new List<CustomerRegistrationReportDto>();
+            if (customerRegistrationReportParameters.Year != 0)
+            {
+                customerReports = _repo.FindBy(c => c.CreatedOn.Year == customerRegistrationReportParameters.Year)
+                            .GroupBy(c => new { c.CreatedOn.Month })
+                            .Select(g => new CustomerRegistrationReportDto()
+                            {
+                                CustomerCount = g.Count(),
+                                MaleCount = g.Where(c => c.Gender == "M").Count(),
+                                FemaleCount = g.Where(c => c.Gender == "F").Count(),
+                                Month = g.Key.Month
+                            })
+                            .OrderBy(c => c.Month);
+            }
+            else
+            {
+                customerReports = _repo.FindBy(c => c.CreatedOn.Year >= DateTime.Now.AddYears(-5).Year)
+                            .GroupBy(c => new { c.CreatedOn.Year })
+                             .Select(g => new CustomerRegistrationReportDto()
+                             {
+                                 CustomerCount = g.Count(),
+                                 MaleCount = g.Where(c => c.Gender == "M").Count(),
+                                 FemaleCount = g.Where(c => c.Gender == "F").Count(),
+                                 Year = g.Key.Year
+                             })
+                            .OrderBy(c => c.Year);
+            }
+
+            //IEnumerable<CustomerRegistrationReportDto> customerReports = _appRepository.GetCustomerRegistrationReport(customerRegistrationReportParameters);
+            return Ok(customerReports);
+        }
+
 
         [HttpOptions]
         public IActionResult GetCustomerOptions()
@@ -576,6 +619,289 @@ namespace NG.Service.Controllers.Customers
                         ID = a.CustomerID,
                         Name = a.Firstname + " " + a.Surname
                     }).ToList();
+        }
+
+        private NationalIDResponse GetCustomerFromResponse(string response)
+        {
+            NationalIDResponse objResponse = JsonConvert.DeserializeObject<NationalIDResponse>(response);
+
+            return objResponse;
+        }
+        private string GetCustomerByNationalID(string nationalId)
+        {
+            if (nationalId.Equals("1234567890"))
+            {
+                return @"{
+	                    	'ErrorCode' : '',
+	                    	'ErrorMessage' : '',
+	                    	'ErrorOcurred' : false,
+	                    	'Citizenship' : null,
+	                    	'Clan' : null,
+	                    	'Date_of_Birth' : '10\/7\/1981 12:00:00 AM',
+	                    	'Date_of_Death' : null,
+	                    	'Ethnic_Group' : null,
+	                    	'Family' : null,
+	                    	'Fingerprint' : null,
+	                    	'First_Name' : 'Nick',
+	                    	'Gender' : 'M',
+	                    	'ID_Number' : null,
+	                    	'Occupation' : null,
+	                    	'Other_Name' : 'Nicky',
+	                    	'Photo' : null,
+	                    	'Pin' : '12345',
+	                    	'Place_of_Birth' : null,
+	                    	'Place_of_Death' : null,
+	                    	'Place_of_Live' : 'test address for national id 1234567890',
+	                    	'Signature' : null,
+	                    	'Surname' : 'Jones',
+	                    	'Date_of_Issue' : null,
+	                    	'RegOffice' : null,
+	                    	'Serial_Number' : '1234567890'
+	                    }";
+            }
+            else if (nationalId.Equals("2345678901"))
+            {
+                return @"{
+	                	'ErrorCode' : '',
+	                	'ErrorMessage' : '',
+	                	'ErrorOcurred' : false,
+	                	'Citizenship' : null,
+	                	'Clan' : null,
+	                	'Date_of_Birth' : '1\/12\/1980 12:00:00 AM',
+	                	'Date_of_Death' : null,
+	                	'Ethnic_Group' : null,
+	                	'Family' : null,
+	                	'Fingerprint' : null,
+	                	'First_Name' : 'Angelina',
+	                	'Gender' : 'F',
+	                	'ID_Number' : null,
+	                	'Occupation' : null,
+	                	'Other_Name' : 'Angel',
+	                	'Photo' : null,
+	                	'Pin' : '12345',
+	                	'Place_of_Birth' : null,
+	                	'Place_of_Death' : null,
+	                	'Place_of_Live' : 'test address for national id 2345678901',
+	                	'Signature' : null,
+	                	'Surname' : 'Jolie',
+	                	'Date_of_Issue' : null,
+	                	'RegOffice' : null,
+	                	'Serial_Number' : '2345678901'
+	                }";
+            }
+            else if (nationalId.Equals("3456789012"))
+            {
+                return @"{
+	                    	'ErrorCode' : '',
+	                    	'ErrorMessage' : '',
+	                    	'ErrorOcurred' : false,
+	                    	'Citizenship' : null,
+	                    	'Clan' : null,
+	                    	'Date_of_Birth' : '5\/24\/1980 12:00:00 AM',
+	                    	'Date_of_Death' : null,
+	                    	'Ethnic_Group' : null,
+	                    	'Family' : null,
+	                    	'Fingerprint' : null,
+	                    	'First_Name' : 'John',
+	                    	'Gender' : 'M',
+	                    	'ID_Number' : null,
+	                    	'Occupation' : null,
+	                    	'Other_Name' : 'Johnny',
+	                    	'Photo' : null,
+	                    	'Pin' : '12345',
+	                    	'Place_of_Birth' : null,
+	                    	'Place_of_Death' : null,
+	                    	'Place_of_Live' : 'test address for national id 3456789012',
+	                    	'Signature' : null,
+	                    	'Surname' : 'Doe',
+	                    	'Date_of_Issue' : null,
+	                    	'RegOffice' : null,
+	                    	'Serial_Number' : '3456789012'
+	                    }";
+            }
+            else if (nationalId.Equals("4567890123"))
+            {
+                return @"{
+	                    	'ErrorCode' : '',
+	                    	'ErrorMessage' : '',
+	                    	'ErrorOcurred' : false,
+	                    	'Citizenship' : null,
+	                    	'Clan' : null,
+	                    	'Date_of_Birth' : '10\/15\/1983 12:00:00 AM',
+	                    	'Date_of_Death' : null,
+	                    	'Ethnic_Group' : null,
+	                    	'Family' : null,
+	                    	'Fingerprint' : null,
+	                    	'First_Name' : 'Jack',
+	                    	'Gender' : 'M',
+	                    	'ID_Number' : null,
+	                    	'Occupation' : null,
+	                    	'Other_Name' : 'Jacky',
+	                    	'Photo' : null,
+	                    	'Pin' : '12345',
+	                    	'Place_of_Birth' : null,
+	                    	'Place_of_Death' : null,
+	                    	'Place_of_Live' : 'test address for national id 4567890123',
+	                    	'Signature' : null,
+	                    	'Surname' : 'Sparrow',
+	                    	'Date_of_Issue' : null,
+	                    	'RegOffice' : null,
+	                    	'Serial_Number' : '4567890123'
+	                    }";
+            }
+            else if (nationalId.Equals("5678901234"))
+            {
+                return @"{
+	                    	'ErrorCode' : '',
+	                    	'ErrorMessage' : '',
+	                    	'ErrorOcurred' : false,
+	                    	'Citizenship' : null,
+	                    	'Clan' : null,
+	                    	'Date_of_Birth' : '10\/15\/1983 12:00:00 AM',
+	                    	'Date_of_Death' : null,
+	                    	'Ethnic_Group' : null,
+	                    	'Family' : null,
+	                    	'Fingerprint' : null,
+	                    	'First_Name' : 'Brad',
+	                    	'Gender' : 'M',
+	                    	'ID_Number' : null,
+	                    	'Occupation' : null,
+	                    	'Other_Name' : 'Jacky',
+	                    	'Photo' : null,
+	                    	'Pin' : '23456',
+	                    	'Place_of_Birth' : null,
+	                    	'Place_of_Death' : null,
+	                    	'Place_of_Live' : 'test address for national id 5678901234',
+	                    	'Signature' : null,
+	                    	'Surname' : 'Pitt',
+	                    	'Date_of_Issue' : null,
+	                    	'RegOffice' : null,
+	                    	'Serial_Number' : '5678901234'
+	                    }";
+            }
+            else if (nationalId.Equals("6789012345"))
+            {
+                return @"{
+	                    	'ErrorCode' : '',
+	                    	'ErrorMessage' : '',
+	                    	'ErrorOcurred' : false,
+	                    	'Citizenship' : null,
+	                    	'Clan' : null,
+	                    	'Date_of_Birth' : '10\/15\/1983 12:00:00 AM',
+	                    	'Date_of_Death' : null,
+	                    	'Ethnic_Group' : null,
+	                    	'Family' : null,
+	                    	'Fingerprint' : null,
+	                    	'First_Name' : 'Steve',
+	                    	'Gender' : 'M',
+	                    	'ID_Number' : null,
+	                    	'Occupation' : null,
+	                    	'Other_Name' : 'Steve',
+	                    	'Photo' : null,
+	                    	'Pin' : '23456',
+	                    	'Place_of_Birth' : null,
+	                    	'Place_of_Death' : null,
+	                    	'Place_of_Live' : 'test address for national id 6789012345',
+	                    	'Signature' : null,
+	                    	'Surname' : 'Rogers',
+	                    	'Date_of_Issue' : null,
+	                    	'RegOffice' : null,
+	                    	'Serial_Number' : '6789012345'
+	                    }";
+            }
+            else if (nationalId.Equals("7890123456"))
+            {
+                return @"{
+	                    	'ErrorCode' : '',
+	                    	'ErrorMessage' : '',
+	                    	'ErrorOcurred' : false,
+	                    	'Citizenship' : null,
+	                    	'Clan' : null,
+	                    	'Date_of_Birth' : '10\/15\/1983 12:00:00 AM',
+	                    	'Date_of_Death' : null,
+	                    	'Ethnic_Group' : null,
+	                    	'Family' : null,
+	                    	'Fingerprint' : null,
+	                    	'First_Name' : 'Tony',
+	                    	'Gender' : 'M',
+	                    	'ID_Number' : null,
+	                    	'Occupation' : null,
+	                    	'Other_Name' : null,
+	                    	'Photo' : null,
+	                    	'Pin' : '23456',
+	                    	'Place_of_Birth' : null,
+	                    	'Place_of_Death' : null,
+	                    	'Place_of_Live' : 'test address for national id 7890123456',
+	                    	'Signature' : null,
+	                    	'Surname' : 'Stark',
+	                    	'Date_of_Issue' : null,
+	                    	'RegOffice' : null,
+	                    	'Serial_Number' : '7890123456'
+	                    }";
+            }
+            else if (nationalId.Equals("8901234567"))
+            {
+                return @"{
+	                    	'ErrorCode' : '',
+	                    	'ErrorMessage' : '',
+	                    	'ErrorOcurred' : false,
+	                    	'Citizenship' : null,
+	                    	'Clan' : null,
+	                    	'Date_of_Birth' : '11\/18\/1983 12:00:00 AM',
+	                    	'Date_of_Death' : null,
+	                    	'Ethnic_Group' : null,
+	                    	'Family' : null,
+	                    	'Fingerprint' : null,
+	                    	'First_Name' : 'Johnny',
+	                    	'Gender' : 'M',
+	                    	'ID_Number' : null,
+	                    	'Occupation' : null,
+	                    	'Other_Name' : null,
+	                    	'Photo' : null,
+	                    	'Pin' : '23456',
+	                    	'Place_of_Birth' : null,
+	                    	'Place_of_Death' : null,
+	                    	'Place_of_Live' : 'test address for national id 8901234567',
+	                    	'Signature' : null,
+	                    	'Surname' : 'Depp',
+	                    	'Date_of_Issue' : null,
+	                    	'RegOffice' : null,
+	                    	'Serial_Number' : '8901234567'
+	                    }";
+            }
+            else if (nationalId.Equals("9012345678"))
+            {
+                return @"{
+	                    	'ErrorCode' : '',
+	                    	'ErrorMessage' : '',
+	                    	'ErrorOcurred' : false,
+	                    	'Citizenship' : null,
+	                    	'Clan' : null,
+	                    	'Date_of_Birth' : '11\/18\/1983 12:00:00 AM',
+	                    	'Date_of_Death' : null,
+	                    	'Ethnic_Group' : null,
+	                    	'Family' : null,
+	                    	'Fingerprint' : null,
+	                    	'First_Name' : 'Tom',
+	                    	'Gender' : 'M',
+	                    	'ID_Number' : null,
+	                    	'Occupation' : null,
+	                    	'Other_Name' : 'Tommy',
+	                    	'Photo' : null,
+	                    	'Pin' : '23456',
+	                    	'Place_of_Birth' : null,
+	                    	'Place_of_Death' : null,
+	                    	'Place_of_Live' : '9012345678',
+	                    	'Signature' : null,
+	                    	'Surname' : 'Cruise',
+	                    	'Date_of_Issue' : null,
+	                    	'RegOffice' : null,
+	                    	'Serial_Number' : '9012345678'
+	                    }";
+            }
+
+            return "{'ErrorOcurred':true,'ErrorCode':'ISB-105','ErrorMessage':'There is no information for requested search parameters'}";
+
         }
     }
 }
