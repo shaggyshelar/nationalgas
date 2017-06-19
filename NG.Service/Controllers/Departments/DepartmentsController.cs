@@ -13,6 +13,7 @@ using NG.Application.Departments;
 using NG.Service.Controllers.Departments;
 using NG.Common.Helpers;
 using NG.Common.Extensions;
+using NG.Application;
 
 namespace NG.Service.Controllers
 {
@@ -39,6 +40,7 @@ namespace NG.Service.Controllers
 
         [HttpGet(Name = "GetDepartments")]
         [HttpHead]
+        [Authorize(Policy = Permissions.DepartmentRead)]
         public IActionResult GetDepartments(DepartmentsResourceParameters departmentsResourceParameters,
             [FromHeader(Name = "Accept")] string mediaType)
         {
@@ -109,6 +111,7 @@ namespace NG.Service.Controllers
         }
 
         [HttpGet("{id}", Name = "GetDepartment")]
+        [Authorize(Policy = Permissions.DepartmentRead)]
         public IActionResult GetDepartment(Guid id, [FromQuery] string fields)
         {
             if (!_typeHelperService.TypeHasProperties<DepartmentDto>
@@ -136,6 +139,7 @@ namespace NG.Service.Controllers
         }
 
         [HttpDelete("{id}", Name = "DeleteDepartment")]
+        [Authorize(Policy = Permissions.DepartmentDelete)]
         public IActionResult DeleteDepartment(Guid id)
         {
             var departmentFromRepo = _repo.FindByKey(id);
@@ -155,6 +159,7 @@ namespace NG.Service.Controllers
         }
 
         [HttpPut("{id}", Name = "UpdateDepartment")]
+        [Authorize(Policy = Permissions.DepartmentUpdate)]
         public IActionResult UpdateDepartment(Guid id, [FromBody] DepartmentForUpdationDto department)
         {
             if (department == null)
@@ -178,6 +183,7 @@ namespace NG.Service.Controllers
         }
 
         [HttpPatch("{id}", Name = "PartiallyUpdateDepartment")]
+        [Authorize(Policy = Permissions.DepartmentUpdate)]
         public IActionResult PartiallyUpdateDepartment(Guid id,
                     [FromBody] JsonPatchDocument<DepartmentForUpdationDto> patchDoc)
         {

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using NG.Common.Services;
 using NG.Domain.Customers;
 using NG.Domain.Departments;
+using NG.Domain.Users;
+using NG.Service.Controllers.Core;
 using NG.Service.Controllers.Customers;
 using NG.Service.Controllers.Departments;
 
@@ -47,10 +49,39 @@ namespace NG.Service
             { "DistributorContact", new PropertyMappingValue(new List<string>() { "DistributorContact" } ) },
         };
 
+        private Dictionary<string, PropertyMappingValue> _esplUserPropertyMapping =
+          new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+          {
+               { "Id", new PropertyMappingValue(new List<string>() { "Id" } ) },
+               { "FirstName", new PropertyMappingValue(new List<string>() { "FirstName" } )},
+               { "LastName", new PropertyMappingValue(new List<string>() { "LastName" } )},
+               { "Email", new PropertyMappingValue(new List<string>() { "Email" } )},
+               { "UserName", new PropertyMappingValue(new List<string>() { "UserName" } )}
+          };
+
+        private Dictionary<string, PropertyMappingValue> _esplRolesPropertyMapping =
+         new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+         {
+               { "Id", new PropertyMappingValue(new List<string>() { "Id" } ) },
+               { "Name", new PropertyMappingValue(new List<string>() { "Name" } )}
+         };
+
+        private Dictionary<string, PropertyMappingValue> _appModulesPropertyMapping =
+        new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+        {
+               { "Id", new PropertyMappingValue(new List<string>() { "Id" } ) },
+               { "Name", new PropertyMappingValue(new List<string>() { "Name" } )},
+               { "MenuText", new PropertyMappingValue(new List<string>() { "MenuText" } )}
+        };
+
+
         public PropertyMappingService()
         {
             propertyMappings.Add(new PropertyMapping<DepartmentDto, Department>(_departmentPropertyMapping));
             propertyMappings.Add(new PropertyMapping<CustomerDto, Customer>(_customerPropertyMapping));
+            propertyMappings.Add(new PropertyMapping<AppUserDto, AppUser>(_esplUserPropertyMapping));
+            propertyMappings.Add(new PropertyMapping<AppModuleDto, Domain.Core.AppModule>(_appModulesPropertyMapping));
+            propertyMappings.Add(new PropertyMapping<AppRoleDto, IdentityRole>(_esplRolesPropertyMapping));
         }
 
         public Dictionary<string, PropertyMappingValue> GetPropertyMapping
