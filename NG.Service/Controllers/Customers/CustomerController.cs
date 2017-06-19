@@ -22,6 +22,8 @@ using NG.Common.Helpers;
 using NG.Common.DTO;
 using NG.Common;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
+using NG.Application;
 
 namespace NG.Service.Controllers.Customers
 {
@@ -49,7 +51,7 @@ namespace NG.Service.Controllers.Customers
 
         [HttpGet(Name = "GetCustomers")]
         [HttpHead]
-        //[Authorize(Policy = Permissions.CustomerRead)]
+        [Authorize(Policy = Permissions.CustomerRead)]
         public IActionResult GetCustomers(CustomerResourceParameters customerResourceParameters,
             [FromHeader(Name = "Accept")] string mediaType)
         {
@@ -127,6 +129,7 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpGet("ExportToExcel", Name = "ExportToExcel")]
+        [Authorize(Policy = Permissions.CustomerRead)]
         public IActionResult ExportToExcel(ExportCustomerResourceParameters customerResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<CustomerDto, Customer>
@@ -206,6 +209,7 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpGet("ExportToPdf", Name = "ExportToPdf")]
+        [Authorize(Policy = Permissions.CustomerRead)]
         public async Task<IActionResult> ExportToPdf(ExportCustomerResourceParameters customerResourceParameters, [FromServices] INodeServices nodeServices)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<CustomerDto, Customer>
@@ -234,14 +238,14 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpGet("LookUp", Name = "GetCustomerAsLookUp")]
-        //[Authorize(Policy = Permissions.CustomerRead)]
+        [Authorize(Policy = Permissions.CustomerRead)]
         public IActionResult GetCustomerAsLookUp([FromHeader(Name = "Accept")] string mediaType)
         {
             return Ok(this.GetCustomerAsLookUp());
         }
 
         [HttpGet("{id}", Name = "GetCustomer")]
-        //[Authorize(Policy = Permissions.CustomerRead)]
+        [Authorize(Policy = Permissions.CustomerRead)]
         public IActionResult GetCustomer(Guid id, [FromQuery] string fields)
         {
             if (!_typeHelperService.TypeHasProperties<CustomerDto>
@@ -270,7 +274,7 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpPost(Name = "CreateCustomer")]
-        //[Authorize(Policy = Permissions.CustomerCreate)]
+        [Authorize(Policy = Permissions.CustomerCreate)]
         // [RequestHeaderMatchesMediaType("Content-Type",
         //     new[] { "application/vnd.marvin.customer.full+json" })]
         public IActionResult CreateCustomer([FromBody] CustomerForCreationDto customer)
@@ -315,7 +319,7 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpDelete("{id}", Name = "DeleteCustomer")]
-        //[Authorize(Policy = Permissions.CustomerDelete)]
+        [Authorize(Policy = Permissions.CustomerDelete)]
         public IActionResult DeleteCustomer(Guid id)
         {
             var customerFromRepo = _repo.FindByKey(id);
@@ -337,7 +341,7 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpPut("{id}", Name = "UpdateCustomer")]
-        //[Authorize(Policy = Permissions.CustomerUpdate)]
+        [Authorize(Policy = Permissions.CustomerUpdate)]
         public IActionResult UpdateCustomer(Guid id, [FromBody] CustomerForUpdationDto customer)
         {
             if (customer == null)
@@ -371,7 +375,7 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpPatch("{id}", Name = "PartiallyUpdateCustomer")]
-        //[Authorize(Policy = Permissions.CustomerUpdate)]
+        [Authorize(Policy = Permissions.CustomerUpdate)]
         public IActionResult PartiallyUpdateCustomer(Guid id,
                     [FromBody] JsonPatchDocument<CustomerForUpdationDto> patchDoc)
         {
@@ -411,7 +415,7 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpPost("validate", Name = "ValidateNationalId")]
-        //[Authorize(Policy = Permissions.CustomerCreate)]
+        [Authorize(Policy = Permissions.CustomerCreate)]
         // [RequestHeaderMatchesMediaType("Content-Type",
         //     new[] { "application/vnd.marvin.customer.full+json" })]
         public IActionResult ValidateNationalId([FromBody] CustomerValidationResourceParameters customerValidationResourceParameters)
@@ -446,6 +450,7 @@ namespace NG.Service.Controllers.Customers
         }
 
         [HttpGet("report", Name = "GetCustomerRegistrationResults")]
+        [Authorize(Policy = Permissions.CustomerRead)]
         public IActionResult GetCustomerRegistrationResults(CustomerRegistrationReportParameters customerRegistrationReportParameters)
         {
             IEnumerable<CustomerRegistrationReportDto> customerReports = new List<CustomerRegistrationReportDto>();
@@ -766,7 +771,7 @@ namespace NG.Service.Controllers.Customers
 	                    	'Gender' : 'M',
 	                    	'ID_Number' : null,
 	                    	'Occupation' : null,
-	                    	'Other_Name' : 'Jacky',
+	                    	'Other_Name' : 'Brad',
 	                    	'Photo' : null,
 	                    	'Pin' : '23456',
 	                    	'Place_of_Birth' : null,

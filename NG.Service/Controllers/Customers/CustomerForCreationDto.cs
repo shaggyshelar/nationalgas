@@ -66,5 +66,8 @@ namespace NG.Service.Controllers.Customers
         [RequiredAttribute(ErrorMessage = "Please enter distributor contact details")]
         [MaxLengthAttribute(20, ErrorMessage = "DistributorContact cannot be greater than 20 characters.")]
         public string DistributorContact { get; set; }
+        
+        [RequiredAttribute(ErrorMessage = "Please Enter UserID")]
+        public string UserID { get; set; }
     }
 }

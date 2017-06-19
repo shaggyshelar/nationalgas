@@ -1,4 +1,5 @@
 using System;
+using NG.Domain.Users;
 using NG.Service.Core;
 
 namespace NG.Service.Controllers.Customers
@@ -23,6 +24,7 @@ namespace NG.Service.Controllers.Customers
         public string DistributorName { get; set; }
         public string DistributorAddress { get; set; }
         public string DistributorContact { get; set; }
+        public string UserID { get; set; }
 
     }
 }

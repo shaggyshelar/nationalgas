@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using NG.Domain.Common;
+using NG.Domain.Users;
 
 namespace NG.Domain.Customers
 {
@@ -68,6 +70,8 @@ namespace NG.Domain.Customers
         [RequiredAttribute]
         [MaxLengthAttribute(20)]
         public string DistributorContact { get; set; }
-
+        [ForeignKey("UserID")]
+        public AppUser AppUser { get; set; }
+        public string UserID { get; set; }
     }
 }

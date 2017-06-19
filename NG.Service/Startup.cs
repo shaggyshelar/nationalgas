@@ -29,6 +29,8 @@ using NG.Common;
 using NG.Service.Controllers.Departments;
 using NG.Domain.Departments;
 using NLog.Extensions.Logging;
+using NG.Service.Controllers.Core;
+using NG.Application;
 
 namespace NG.Service
 {
@@ -131,6 +133,12 @@ namespace NG.Service
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("IsSuperAdmin", policy => policy.RequireClaim("IsSuperAdmin"));
+
+                Type type = typeof(Permissions);
+                foreach (var p in type.GetFields())
+                {
+                    options.AddPolicy(Convert.ToString(p.GetValue(null)), policy => policy.RequireClaim(Convert.ToString(p.GetValue(null))));
+                }
             });
 
             services.AddNodeServices();
@@ -234,6 +242,13 @@ namespace NG.Service
                 cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForCreationDto>();
                 cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
                 cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForUpdationDto>();
+                cfg.CreateMap<AppUser, Controllers.Core.AppUserDto>();
+                cfg.CreateMap<Controllers.Core.AppUserForCreationDto, AppUser>();
+                cfg.CreateMap<IdentityRole, Controllers.Core.AppRoleDto>();
+                cfg.CreateMap<Controllers.Core.AppRoleForCreationDto, IdentityRole>();
+                cfg.CreateMap<AppUserForCreationDto, AppUser>();
+                cfg.CreateMap<IdentityRole, AppRoleDto>();
+                cfg.CreateMap<AppRoleForCreationDto, IdentityRole>();
             });
 
             identitySeeder.Seed().Wait();
