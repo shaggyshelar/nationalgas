@@ -4,8 +4,8 @@ namespace NG.Application.Core
 {
     public class AppRolesResourceParameters : BaseResourceParameters
     {
-        public string OrderBy { get; set; } = "Name";
-        private int _pageSize = 0;
+        public override string OrderBy { get; set; } = "Name";
+        private new int _pageSize = 0;
         public override int PageSize
         {
             get
