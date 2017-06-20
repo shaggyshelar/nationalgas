@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NG.Domain.Customers;
 using System.Linq;
+using NG.Service.Core;
 
 namespace NG.Service.Controllers.Core
 {

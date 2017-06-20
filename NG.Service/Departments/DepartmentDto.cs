@@ -1,6 +1,6 @@
 using System;
 
-namespace NG.Service.Controllers.Departments
+namespace NG.Service.Departments
 {
     public class DepartmentDto
     {

@@ -20,7 +20,7 @@ using NG.Common.Enums;
 using NG.Common.Extensions;
 using NG.Common.Helpers;
 
-namespace NG.Service.Controllers.Core
+namespace NG.Service.Core
 {
     [Route("api/appusers/{userId}/roles")]
     // [Authorize(Policy = "IsSuperAdmin")]

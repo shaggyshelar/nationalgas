@@ -2,7 +2,7 @@ using System;
 using NG.Domain.Users;
 using NG.Service.Core;
 
-namespace NG.Service.Controllers.Customers
+namespace NG.Service.Customers
 {
     public class CustomerDto : BaseDto
     {

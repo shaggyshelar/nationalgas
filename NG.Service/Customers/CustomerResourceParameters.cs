@@ -1,6 +1,6 @@
 using NG.Common.Helpers;
 
-namespace NG.Application.Customers
+namespace NG.Service.Customers
 {
     public class CustomerResourceParameters : BaseResourceParameters
     {

@@ -1,6 +1,6 @@
 using NG.Service.Core;
 
-namespace NG.Service.Controllers.Departments
+namespace NG.Service.Departments
 {
     public class DepartmentForUpdationDto : BaseDto
     {

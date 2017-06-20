@@ -1,4 +1,4 @@
-namespace NG.Application.Customers
+namespace NG.Service.Customers
 {
     public class CustomerRegistrationReportParameters
     {

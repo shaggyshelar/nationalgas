@@ -18,7 +18,7 @@ using NG.Common.Services;
 using NG.Domain.Customers;
 using NG.Domain.Users;
 
-namespace NG.Service.Controllers.Core
+namespace NG.Service.Core
 {
     [Route("api/appusers")]
     // [Authorize(Policy = "IsSuperAdmin")]

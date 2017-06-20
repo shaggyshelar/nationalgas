@@ -8,8 +8,9 @@ using NG.Domain.Customers;
 using NG.Domain.Departments;
 using NG.Domain.Users;
 using NG.Service.Controllers.Core;
-using NG.Service.Controllers.Customers;
-using NG.Service.Controllers.Departments;
+using NG.Service.Core;
+using NG.Service.Customers;
+using NG.Service.Departments;
 
 namespace NG.Service
 {

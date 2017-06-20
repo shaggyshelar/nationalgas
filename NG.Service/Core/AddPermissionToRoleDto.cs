@@ -1,6 +1,6 @@
 using NG.Common.Enums;
 
-namespace NG.Service.Controllers.Core
+namespace NG.Service.Core
 {
     public class AddPermissionToRoleDto
     {

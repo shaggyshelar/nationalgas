@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices;
 using OfficeOpenXml.Style;
 using NG.Common.Services;
-using NG.Application.Customers;
 using NG.Domain.Customers;
 using NG.Common.Extensions;
 using NG.Common.Enums;
@@ -24,8 +23,9 @@ using NG.Common;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
 using NG.Application;
+using NG.Service.Customers;
 
-namespace NG.Service.Controllers.Customers
+namespace NG.Service.Controllers
 {
     [Route("api/customers")]
     public class CustomerController : Controller
@@ -52,7 +52,7 @@ namespace NG.Service.Controllers.Customers
         [HttpGet(Name = "GetCustomers")]
         [HttpHead]
         [Authorize(Policy = Permissions.CustomerRead)]
-        public IActionResult GetCustomers(CustomerResourceParameters customerResourceParameters,
+        public IActionResult GetCustomers(Customers.CustomerResourceParameters customerResourceParameters,
             [FromHeader(Name = "Accept")] string mediaType)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<CustomerDto, Customer>
@@ -418,7 +418,7 @@ namespace NG.Service.Controllers.Customers
         [Authorize(Policy = Permissions.CustomerCreate)]
         // [RequestHeaderMatchesMediaType("Content-Type",
         //     new[] { "application/vnd.marvin.customer.full+json" })]
-        public IActionResult ValidateNationalId([FromBody] CustomerValidationResourceParameters customerValidationResourceParameters)
+        public IActionResult ValidateNationalId([FromBody] Customers.CustomerValidationResourceParameters customerValidationResourceParameters)
         {
             /*
                 TODO: 
@@ -451,7 +451,7 @@ namespace NG.Service.Controllers.Customers
 
         [HttpGet("report", Name = "GetCustomerRegistrationResults")]
         [Authorize(Policy = Permissions.CustomerRead)]
-        public IActionResult GetCustomerRegistrationResults(CustomerRegistrationReportParameters customerRegistrationReportParameters)
+        public IActionResult GetCustomerRegistrationResults(Customers.CustomerRegistrationReportParameters customerRegistrationReportParameters)
         {
             IEnumerable<CustomerRegistrationReportDto> customerReports = new List<CustomerRegistrationReportDto>();
             if (customerRegistrationReportParameters.Year != 0)
@@ -585,7 +585,7 @@ namespace NG.Service.Controllers.Customers
                 CustomersResourceParameters.PageSize);
         }
 
-        public PagedList<Customer> GetCustomers(CustomerResourceParameters CustomersResourceParameters)
+        public PagedList<Customer> GetCustomers(Customers.CustomerResourceParameters CustomersResourceParameters)
         {
             var collectionBeforePaging =
                 _repo.Query().Where(c => !c.IsDelete)

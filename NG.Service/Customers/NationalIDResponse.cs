@@ -1,6 +1,6 @@
 using System;
 
-namespace NG.Service.Controllers.Customers
+namespace NG.Service.Customers
 {
     public class NationalIDResponse
     {

@@ -1,6 +1,6 @@
 using NG.Common.Helpers;
 
-namespace NG.Application.Departments
+namespace NG.Service.Departments
 {
     public class DepartmentsResourceParameters : BaseResourceParameters
     {

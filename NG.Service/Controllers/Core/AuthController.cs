@@ -16,6 +16,7 @@ using NG.Common;
 using NG.Common.Filters;
 using NG.Domain.Customers;
 using NG.Domain.Users;
+using NG.Service.Core;
 
 namespace NG.Service.Controllers.Core
 {

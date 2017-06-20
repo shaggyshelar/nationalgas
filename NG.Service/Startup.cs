@@ -26,11 +26,12 @@ using NG.Persistence;
 using NG.Domain.Users;
 using NG.Common.Services;
 using NG.Common;
-using NG.Service.Controllers.Departments;
 using NG.Domain.Departments;
 using NLog.Extensions.Logging;
 using NG.Service.Controllers.Core;
 using NG.Application;
+using NG.Service.Departments;
+using NG.Service.Core;
 
 namespace NG.Service
 {
@@ -237,15 +238,15 @@ namespace NG.Service
                 cfg.CreateMap<Department, DepartmentDto>();
                 cfg.CreateMap<DepartmentForUpdationDto, Department>();
                 cfg.CreateMap<Department, DepartmentForUpdationDto>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerDto>();
-                cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForCreationDto>();
-                cfg.CreateMap<NG.Service.Controllers.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Controllers.Customers.CustomerForUpdationDto>();
-                cfg.CreateMap<AppUser, Controllers.Core.AppUserDto>();
-                cfg.CreateMap<Controllers.Core.AppUserForCreationDto, AppUser>();
-                cfg.CreateMap<IdentityRole, Controllers.Core.AppRoleDto>();
-                cfg.CreateMap<Controllers.Core.AppRoleForCreationDto, IdentityRole>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerDto>();
+                cfg.CreateMap<NG.Service.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerForCreationDto>();
+                cfg.CreateMap<NG.Service.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerForUpdationDto>();
+                cfg.CreateMap<AppUser, Core.AppUserDto>();
+                cfg.CreateMap<Core.AppUserForCreationDto, AppUser>();
+                cfg.CreateMap<IdentityRole, Core.AppRoleDto>();
+                cfg.CreateMap<Core.AppRoleForCreationDto, IdentityRole>();
                 cfg.CreateMap<AppUserForCreationDto, AppUser>();
                 cfg.CreateMap<IdentityRole, AppRoleDto>();
                 cfg.CreateMap<AppRoleForCreationDto, IdentityRole>();

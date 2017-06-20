@@ -20,6 +20,7 @@ using NG.Common.Enums;
 using NG.Common.Extensions;
 using NG.Common.Helpers;
 using NG.Domain.Customers;
+using NG.Service.Core;
 
 namespace NG.Service.Controllers.Core
 {

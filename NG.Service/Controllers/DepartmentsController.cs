@@ -9,11 +9,10 @@ using Microsoft.AspNetCore.Authorization;
 using NG.Common.Services;
 using NG.Common;
 using NG.Domain.Departments;
-using NG.Application.Departments;
-using NG.Service.Controllers.Departments;
 using NG.Common.Helpers;
 using NG.Common.Extensions;
 using NG.Application;
+using NG.Service.Departments;
 
 namespace NG.Service.Controllers
 {

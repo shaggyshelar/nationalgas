@@ -1,7 +1,7 @@
 using System;
 using NG.Service.Core;
 
-namespace NG.Service.Controllers.Core
+namespace NG.Service.Core
 {
     public class AppModuleDto : BaseDto
     {

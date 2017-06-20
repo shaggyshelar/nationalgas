@@ -1,4 +1,4 @@
-namespace NG.Service.Controllers.Core
+namespace NG.Service.Core
 {
     public class AppRoleForCreationDto
     {

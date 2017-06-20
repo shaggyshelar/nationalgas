@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using NG.Service.Core;
 
-namespace NG.Service.Controllers.Customers
+namespace NG.Service.Customers
 {
     public class CustomerForUpdationDto : BaseDto
     {
