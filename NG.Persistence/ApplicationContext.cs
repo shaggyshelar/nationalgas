@@ -13,7 +13,7 @@ namespace NG.Persistence
     {
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
-            Database.Migrate();
+            //Database.Migrate();
         }
 
         public DbSet<Department> Departments { get; set; }

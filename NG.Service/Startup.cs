@@ -55,6 +55,28 @@ namespace NG.Service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(Configuration);
+
+            var mapperConfig = new AutoMapper.MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Department, DepartmentDto>();
+                cfg.CreateMap<DepartmentForUpdationDto, Department>();
+                cfg.CreateMap<Department, DepartmentForUpdationDto>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerDto>();
+                cfg.CreateMap<NG.Service.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerForCreationDto>();
+                cfg.CreateMap<NG.Service.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
+                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerForUpdationDto>();
+                cfg.CreateMap<AppUser, Core.AppUserDto>();
+                cfg.CreateMap<Core.AppUserForCreationDto, AppUser>();
+                cfg.CreateMap<IdentityRole, Core.AppRoleDto>();
+                cfg.CreateMap<Core.AppRoleForCreationDto, IdentityRole>();
+                cfg.CreateMap<AppUserForCreationDto, AppUser>();
+                cfg.CreateMap<IdentityRole, AppRoleDto>();
+                cfg.CreateMap<AppRoleForCreationDto, IdentityRole>();
+            });
+            var mapper = mapperConfig.CreateMapper();
+            services.AddSingleton(mapper);
+
             // register the DbContext on the container, getting the connection string from
             // appSettings (note: use this during development; in a production environment,
             // it's better to store the connection string in an environment variable)
@@ -233,24 +255,24 @@ namespace NG.Service
                 });
             }
 
-            AutoMapper.Mapper.Initialize(cfg =>
-            {
-                cfg.CreateMap<Department, DepartmentDto>();
-                cfg.CreateMap<DepartmentForUpdationDto, Department>();
-                cfg.CreateMap<Department, DepartmentForUpdationDto>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerDto>();
-                cfg.CreateMap<NG.Service.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerForCreationDto>();
-                cfg.CreateMap<NG.Service.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
-                cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerForUpdationDto>();
-                cfg.CreateMap<AppUser, Core.AppUserDto>();
-                cfg.CreateMap<Core.AppUserForCreationDto, AppUser>();
-                cfg.CreateMap<IdentityRole, Core.AppRoleDto>();
-                cfg.CreateMap<Core.AppRoleForCreationDto, IdentityRole>();
-                cfg.CreateMap<AppUserForCreationDto, AppUser>();
-                cfg.CreateMap<IdentityRole, AppRoleDto>();
-                cfg.CreateMap<AppRoleForCreationDto, IdentityRole>();
-            });
+            // AutoMapper.Mapper.Initialize(cfg =>
+            // {
+            //     cfg.CreateMap<Department, DepartmentDto>();
+            //     cfg.CreateMap<DepartmentForUpdationDto, Department>();
+            //     cfg.CreateMap<Department, DepartmentForUpdationDto>();
+            //     cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerDto>();
+            //     cfg.CreateMap<NG.Service.Customers.CustomerForCreationDto, NG.Domain.Customers.Customer>();
+            //     cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerForCreationDto>();
+            //     cfg.CreateMap<NG.Service.Customers.CustomerForUpdationDto, NG.Domain.Customers.Customer>();
+            //     cfg.CreateMap<NG.Domain.Customers.Customer, NG.Service.Customers.CustomerForUpdationDto>();
+            //     cfg.CreateMap<AppUser, Core.AppUserDto>();
+            //     cfg.CreateMap<Core.AppUserForCreationDto, AppUser>();
+            //     cfg.CreateMap<IdentityRole, Core.AppRoleDto>();
+            //     cfg.CreateMap<Core.AppRoleForCreationDto, IdentityRole>();
+            //     cfg.CreateMap<AppUserForCreationDto, AppUser>();
+            //     cfg.CreateMap<IdentityRole, AppRoleDto>();
+            //     cfg.CreateMap<AppRoleForCreationDto, IdentityRole>();
+            // });
 
             identitySeeder.Seed().Wait();
             libraryContext.EnsureSeedDataForContext();
