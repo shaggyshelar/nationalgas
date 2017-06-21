@@ -14,7 +14,6 @@ using NG.Persistence;
 using System.Linq;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using NG.Application.Core;
 using NG.Common.DTO;
 using NG.Common.Enums;
 using NG.Common.Extensions;

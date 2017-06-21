@@ -1,6 +1,6 @@
 using NG.Common.Helpers;
 
-namespace NG.Application.Core
+namespace NG.Service.Core
 {
     public class AppRolesResourceParameters : BaseResourceParameters
     {
