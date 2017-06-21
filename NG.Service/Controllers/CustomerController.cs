@@ -35,18 +35,21 @@ namespace NG.Service.Controllers
         private ITypeHelperService _typeHelperService;
         private readonly IHostingEnvironment _hostingEnvironment;
         private IGenericRepository<Customer> _repo;
+        private IMapper _mapper;
 
         public CustomerController(IUrlHelper urlHelper,
            IPropertyMappingService propertyMappingService,
            ITypeHelperService typeHelperService,
            IHostingEnvironment hostingEnvironment,
-           IGenericRepository<Customer> repo)
+           IGenericRepository<Customer> repo,
+           IMapper mapper)
         {
             _urlHelper = urlHelper;
             _propertyMappingService = propertyMappingService;
             _typeHelperService = typeHelperService;
             _hostingEnvironment = hostingEnvironment;
             _repo = repo;
+            _mapper = mapper;
         }
 
         [HttpGet(Name = "GetCustomers")]
@@ -68,7 +71,7 @@ namespace NG.Service.Controllers
             }
 
             var customerFromRepo = this.GetCustomers(customerResourceParameters);
-            var customer = Mapper.Map<IEnumerable<CustomerDto>>(customerFromRepo);
+            var customer = _mapper.Map<IEnumerable<CustomerDto>>(customerFromRepo);
 
             var collectionBeforePaging =
                 _repo.Query().Where(a => a.IsDelete == false).ApplySort(customerResourceParameters.OrderBy,
@@ -89,7 +92,7 @@ namespace NG.Service.Controllers
                 customerResourceParameters.PageNumber,
                 customerResourceParameters.PageSize);
 
-            var departments = Mapper.Map<IEnumerable<CustomerDto>>(departmentsFromRepo);
+            var departments = _mapper.Map<IEnumerable<CustomerDto>>(departmentsFromRepo);
             var shapedDepartments = departments.ShapeData(customerResourceParameters.Fields);
 
             if (mediaType == "application/vnd.marvin.hateoas+json")
@@ -261,7 +264,7 @@ namespace NG.Service.Controllers
                 return NotFound();
             }
 
-            var customer = Mapper.Map<CustomerDto>(customerFromRepo);
+            var customer = _mapper.Map<CustomerDto>(customerFromRepo);
 
             var links = Utilities.CreateLinks(id, fields, _urlHelper, "Customer");
 
@@ -285,7 +288,7 @@ namespace NG.Service.Controllers
             }
             if (ModelState.IsValid)
             {
-                var customerEntity = Mapper.Map<Customer>(customer);
+                var customerEntity = _mapper.Map<Customer>(customer);
 
                 SetCreationUserData(customerEntity);
 
@@ -295,7 +298,7 @@ namespace NG.Service.Controllers
                     // return StatusCode(500, "A problem happened with handling your request.");
                 }
 
-                var customerToReturn = Mapper.Map<CustomerDto>(customerEntity);
+                var customerToReturn = _mapper.Map<CustomerDto>(customerEntity);
 
                 var links = Utilities.CreateLinks(customerToReturn.CustomerID, null, _urlHelper, "Customer");
 
@@ -358,7 +361,7 @@ namespace NG.Service.Controllers
                 }
                 SetItemHistoryData(customer, customerFromRepo);
 
-                Mapper.Map(customer, customerFromRepo);
+                _mapper.Map(customer, customerFromRepo);
                 if (!_repo.Update(customerFromRepo))
                 {
                     throw new Exception("Updating an customer failed on save.");
@@ -391,7 +394,7 @@ namespace NG.Service.Controllers
                 return NotFound();
             }
 
-            var bookToPatch = Mapper.Map<CustomerForUpdationDto>(bookForAuthorFromRepo);
+            var bookToPatch = _mapper.Map<CustomerForUpdationDto>(bookForAuthorFromRepo);
 
             patchDoc.ApplyTo(bookToPatch, ModelState);
 
@@ -405,7 +408,7 @@ namespace NG.Service.Controllers
             }
 
             SetItemHistoryData(bookToPatch, bookForAuthorFromRepo);
-            Mapper.Map(bookToPatch, bookForAuthorFromRepo);
+            _mapper.Map(bookToPatch, bookForAuthorFromRepo);
 
             if (!_repo.Update(bookForAuthorFromRepo))
             {
