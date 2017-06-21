@@ -13,7 +13,8 @@ namespace NG.Persistence
     {
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
-            //Database.Migrate();
+            //Need to comment this line while runnung test cases
+            Database.Migrate();
         }
 
         public DbSet<Department> Departments { get; set; }
