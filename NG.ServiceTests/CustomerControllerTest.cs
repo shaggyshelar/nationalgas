@@ -16,6 +16,7 @@ using NG.Service.Controllers;
 using NG.Service.Customers;
 using Xunit;
 using NG.ServiceTests.Constant;
+using NG.Common.Helpers;
 
 namespace NG.ServiceTests
 {
@@ -95,7 +96,17 @@ namespace NG.ServiceTests
             IEnumerable<ExpandoObject> list = returnedResult.Value as IEnumerable<ExpandoObject>;
             var returnedList = list.ToList();
             Assert.Equal(resourseParams.PageSize, returnedList.Count);
+        }
 
+        [Fact]
+        public void GetAllCustomersPaginationSecondPageTest()
+        {
+            //Given
+            CustomerResourceParameters resourseParams = new CustomerResourceParameters();
+            resourseParams.PageSize = 3;
+            resourseParams.PageNumber = 1;
+            //When
+            SetContext();
             //second page
             resourseParams.PageNumber = 2;
             int expectedItems = (allSampleCustomers.Count() - resourseParams.PageSize) > resourseParams.PageSize ? resourseParams.PageSize : (allSampleCustomers.Count() - resourseParams.PageSize);
@@ -103,7 +114,7 @@ namespace NG.ServiceTests
             IActionResult secondresult = _customerController.GetCustomers(resourseParams, Constants.AcceptJSON);
             OkObjectResult returnedSecondResult = Assert.IsType<OkObjectResult>(secondresult);
             IEnumerable<ExpandoObject> secondList = returnedSecondResult.Value as IEnumerable<ExpandoObject>;
-            returnedList = secondList.ToList();
+            var returnedList = secondList.ToList();
             Assert.Equal(expectedItems, returnedList.Count);
         }
 
@@ -169,6 +180,107 @@ namespace NG.ServiceTests
             Assert.Equal(sampleCustomer.DistributorAddress, customerObj.DistributorAddress);
             Assert.Equal(sampleCustomer.DistributorContact, customerObj.DistributorContact);
             Assert.Equal(sampleCustomer.UserID, customerObj.UserID);
+        }
+
+        [Fact]
+        public void GetAllCustomersLookupTest()
+        {
+            //Given
+            CustomerResourceParameters resourseParams = new CustomerResourceParameters();
+            //When
+            SetContext();
+            //Then
+            IActionResult result = _customerController.GetCustomerAsLookUp(Constants.AcceptJSON);
+            OkObjectResult returnedResult = Assert.IsType<OkObjectResult>(result);
+            IEnumerable<LookUpItem> list = returnedResult.Value as IEnumerable<LookUpItem>;
+            var returnedList = list.ToList();
+            Assert.Equal(allSampleCustomers.Count, returnedList.Count);
+        }
+
+        [Fact]
+        public void CreateCustomerTest()
+        {
+            //Given
+            CustomerForCreationDto creationDto = new CustomerForCreationDto();
+            creationDto.NationalID = "6789012345";
+            creationDto.SerialNumber = "6789012345";
+            creationDto.Firstname = "Steve";
+            creationDto.SurName = "Rogers";
+            creationDto.Othername = "Steve";
+            creationDto.Mobile = "9873216540";
+            creationDto.Email = "steve.rogers@nock.com";
+            creationDto.Gender = "M";
+            creationDto.DateOfBirth = Convert.ToDateTime("10/15/1983 12:00:00 AM");
+            creationDto.Address = "test address for national id 6789012345";
+            creationDto.Pin = "12345";
+            creationDto.Status = true;
+            creationDto.DistributorName = "Test Distributor 2";
+            creationDto.DistributorAddress = "Test Distributor 2 address";
+            creationDto.DistributorContact = "9876543210";
+            creationDto.UserID = "56c385ae-ce46-41d4-b7fe-08df9aef7402";
+            //When
+            IActionResult result = _customerController.CreateCustomer(creationDto);
+            CreatedAtRouteResult returnedResult = Assert.IsType<CreatedAtRouteResult>(result);
+            dynamic newCustomer = returnedResult.Value;
+            //Then
+            Assert.NotNull(newCustomer.CustomerID);
+            Assert.Equal(creationDto.NationalID, newCustomer.NationalID);
+            Assert.Equal(creationDto.SerialNumber, newCustomer.SerialNumber);
+            Assert.Equal(creationDto.Firstname, newCustomer.Firstname);
+            Assert.Equal(creationDto.SurName, newCustomer.Surname);
+            Assert.Equal(creationDto.Othername, newCustomer.Othername);
+            Assert.Equal(creationDto.Mobile, newCustomer.Mobile);
+            Assert.Equal(creationDto.Email, newCustomer.Email);
+            Assert.Equal(creationDto.Gender, newCustomer.Gender);
+            Assert.Equal(creationDto.DateOfBirth, newCustomer.DateOfBirth);
+            Assert.Equal(creationDto.Address, newCustomer.Address);
+            Assert.Equal(creationDto.Pin, newCustomer.Pin);
+            Assert.Equal(creationDto.Status, newCustomer.Status);
+            Assert.Equal(creationDto.DistributorName, newCustomer.DistributorName);
+            Assert.Equal(creationDto.DistributorAddress, newCustomer.DistributorAddress);
+            Assert.Equal(creationDto.DistributorContact, newCustomer.DistributorContact);
+            Assert.Equal(creationDto.UserID, newCustomer.UserID);
+        }
+
+        [Fact]
+        public void UpdateCustomerTest()
+        {
+            Customer selectedCustomer = allSampleCustomers.LastOrDefault();
+
+            //Given
+            CustomerForUpdationDto updationDto = new CustomerForUpdationDto();
+            updationDto.NationalID = selectedCustomer.NationalID;
+            updationDto.SerialNumber = selectedCustomer.SerialNumber;
+            updationDto.Firstname = selectedCustomer.Firstname;
+            updationDto.SurName = selectedCustomer.Surname;
+            updationDto.Othername = selectedCustomer.Othername;
+            updationDto.Mobile = "1234567890";
+            updationDto.Email = "updated.email.com";
+            updationDto.Gender = selectedCustomer.Gender;
+            updationDto.DateOfBirth = selectedCustomer.DateOfBirth;
+            updationDto.Address = selectedCustomer.Address;
+            updationDto.Pin = selectedCustomer.Pin;
+            updationDto.DistributorName = "Test Distributor 2";
+            updationDto.DistributorAddress = "Test Distributor 2 address";
+            updationDto.DistributorContact = "9876543210";
+            updationDto.UserID = selectedCustomer.UserID;
+            //When
+            IActionResult result = _customerController.UpdateCustomer(selectedCustomer.CustomerID, updationDto);
+            Customer returnedResult = Assert.IsType<Customer>(result);
+            //dynamic newCustomer = returnedResult.Value;
+            //Then
+        }
+
+        [Fact]
+        public void DeleteCustomerTest()
+        {
+            //Given
+            Customer selectedCustomer = allSampleCustomers.First();
+            //When
+            IActionResult result = _customerController.DeleteCustomer(selectedCustomer.CustomerID);
+            Customer returnedResult = Assert.IsType<Customer>(result);
+            //dynamic newCustomer = returnedResult.Value;
+            //Then
         }
 
         private void SetContext()
