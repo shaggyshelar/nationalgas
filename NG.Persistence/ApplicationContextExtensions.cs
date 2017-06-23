@@ -125,7 +125,14 @@ namespace NG.Persistence
 
         public static void UpdateCustomers(this ApplicationContext context)
         {
-            List<Customer> allCustomers = new List<Customer>(){
+            List<Customer> allCustomers = GetAllCustomerData();
+            context.Customers.AddRange(allCustomers);
+            context.SaveChanges();
+        }
+
+        public static List<Customer> GetAllCustomerData()
+        {
+            return new List<Customer>(){
                 new Customer(){
                     CustomerID = new Guid("b1da1d8e-1111-4634-b538-a01709471000"),
                     NationalID = "1234567890",
@@ -163,61 +170,59 @@ namespace NG.Persistence
                 //     UserID = "56c385ae-ce46-41d4-b7fe-08df9aef7402",
                 // },
                 new Customer() {
-                	CustomerID = new Guid("b1da1d8e-1111-4634-b538-a01709471002"),
-                	NationalID = "3456789012",
-                	SerialNumber = "3456789012",
-                	Firstname = "John",
-                	Surname = "Doe",
-                	Othername = "Johnny",
-                	Mobile = "6549871234",
-                	Email = "john.doe@nock.com",
-                	Gender = "M",
-                	DateOfBirth = Convert.ToDateTime("5/24/1980 12:00:00 AM"),
-                	Pin = "12345",
-                	Address = "test address for national id 3456789012",
-                	DistributorName = "Test Distributor 2",
-                	DistributorAddress = "Test Distributor 2 address",
-                	DistributorContact = "9876543210",
-                	UserID = "56c385ae-ce46-41d4-b7fe-08df9aef7303",
+                    CustomerID = new Guid("b1da1d8e-1111-4634-b538-a01709471002"),
+                    NationalID = "3456789012",
+                    SerialNumber = "3456789012",
+                    Firstname = "John",
+                    Surname = "Doe",
+                    Othername = "Johnny",
+                    Mobile = "6549871234",
+                    Email = "john.doe@nock.com",
+                    Gender = "M",
+                    DateOfBirth = Convert.ToDateTime("5/24/1980 12:00:00 AM"),
+                    Pin = "12345",
+                    Address = "test address for national id 3456789012",
+                    DistributorName = "Test Distributor 2",
+                    DistributorAddress = "Test Distributor 2 address",
+                    DistributorContact = "9876543210",
+                    UserID = "56c385ae-ce46-41d4-b7fe-08df9aef7303",
                 },
                 new Customer() {
-                	CustomerID = new Guid("b1da1d8e-1111-4634-b538-a01709471003"),
-                	NationalID = "8901234567",
-                	SerialNumber = "8901234567",
-                	Firstname = "Johnny",
-                	Surname = "Depp",
-                	Mobile = "3216549870",
-                	Email = "johny.depp@nock.com",
-                	Gender = "M",
-                	DateOfBirth = Convert.ToDateTime("11/18/1983 12:00:00 AM"),
-                	Pin = "12345",
-                	Address = "test address for national id 8901234567",
-                	DistributorName = "Test Distributor 3",
-                	DistributorAddress = "Test Distributor 3 address",
-                	DistributorContact = "9876543210",
-                	UserID = "56c385ae-ce46-41d4-b7fe-08df9aef7304",
+                    CustomerID = new Guid("b1da1d8e-1111-4634-b538-a01709471003"),
+                    NationalID = "8901234567",
+                    SerialNumber = "8901234567",
+                    Firstname = "Johnny",
+                    Surname = "Depp",
+                    Mobile = "3216549870",
+                    Email = "johny.depp@nock.com",
+                    Gender = "M",
+                    DateOfBirth = Convert.ToDateTime("11/18/1983 12:00:00 AM"),
+                    Pin = "12345",
+                    Address = "test address for national id 8901234567",
+                    DistributorName = "Test Distributor 3",
+                    DistributorAddress = "Test Distributor 3 address",
+                    DistributorContact = "9876543210",
+                    UserID = "56c385ae-ce46-41d4-b7fe-08df9aef7304",
                 },
                 new Customer() {
-                	CustomerID = new Guid("b1da1d8e-1111-4634-b538-a01709471004"),
-                	NationalID = "4567890123",
-                	SerialNumber = "4567890123",
-                	Firstname = "Jack",
-                	Surname = "Sparrow",
+                    CustomerID = new Guid("b1da1d8e-1111-4634-b538-a01709471004"),
+                    NationalID = "4567890123",
+                    SerialNumber = "4567890123",
+                    Firstname = "Jack",
+                    Surname = "Sparrow",
                     Othername="Jacky",
-                	Mobile = "7894561230",
-                	Email = "johny.depp@nock.com",
-                	Gender = "M",
-                	DateOfBirth = Convert.ToDateTime("10/15/1983 12:00:00 AM"),
-                	Pin = "12345",
-                	Address = "test address for national id 4567890123",
-                	DistributorName = "Test Distributor 3",
-                	DistributorAddress = "Test Distributor 3 address",
-                	DistributorContact = "9876543210",
-                	UserID = "56c385ae-ce46-41d4-b7fe-08df9aef7305",
+                    Mobile = "7894561230",
+                    Email = "johny.depp@nock.com",
+                    Gender = "M",
+                    DateOfBirth = Convert.ToDateTime("10/15/1983 12:00:00 AM"),
+                    Pin = "12345",
+                    Address = "test address for national id 4567890123",
+                    DistributorName = "Test Distributor 3",
+                    DistributorAddress = "Test Distributor 3 address",
+                    DistributorContact = "9876543210",
+                    UserID = "56c385ae-ce46-41d4-b7fe-08df9aef7305",
                 }
             };
-            context.Customers.AddRange(allCustomers);
-            context.SaveChanges();
         }
     }
 }

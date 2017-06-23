@@ -39,14 +39,26 @@ namespace NG.Service
     {
         public static IConfigurationRoot Configuration;
 
+        private bool isTesting = false;
+
         public Startup(IHostingEnvironment env)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appSettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-
+            IConfigurationBuilder builder;
+            if (env.ContentRootPath.IndexOf("Test") >= 0)
+            {
+                builder = new ConfigurationBuilder()
+                                .SetBasePath(env.ContentRootPath)
+                                .AddEnvironmentVariables();
+                isTesting = true;
+            }
+            else
+            {
+                builder = new ConfigurationBuilder()
+                    .SetBasePath(env.ContentRootPath)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                    .AddEnvironmentVariables();
+            }
             Configuration = builder.Build();
         }
 
@@ -80,8 +92,17 @@ namespace NG.Service
             // register the DbContext on the container, getting the connection string from
             // appSettings (note: use this during development; in a production environment,
             // it's better to store the connection string in an environment variable)
-            var connectionString = Configuration["connectionStrings:nationalGasDBConnectionString"];
-            services.AddDbContext<ApplicationContext>(o => o.UseSqlServer(connectionString, b => b.MigrationsAssembly("NG.Service")));
+            if (!isTesting)
+            {
+                var connectionString = Configuration["connectionStrings:nationalGasDBConnectionString"];
+                services.AddDbContext<ApplicationContext>(o => o.UseSqlServer(connectionString, b => b.MigrationsAssembly("NG.Service")));
+            }
+            else
+            {
+                //services.AddDbContext<ApplicationContext>(o => o.UseInMemoryDatabase() , b => b.MigrationsAssembly("NG.Service")));
+                //services.AddDbContext<ApplicationContext>(o => o.UseInMemoryDatabase());
+                services.AddDbContext<ApplicationContext>(o => o.UseInMemoryDatabase());
+            }
             services.AddTransient<IdentityInitializer>();
             services.AddTransient<Microsoft.EntityFrameworkCore.DbContext, ApplicationContext>();
             services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<ApplicationContext>();
@@ -276,24 +297,28 @@ namespace NG.Service
 
             identitySeeder.Seed().Wait();
             libraryContext.EnsureSeedDataForContext();
-            app.UseIpRateLimiting();
+            
             app.UseHttpCacheHeaders();
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseIdentity();
-            app.UseJwtBearerAuthentication(new JwtBearerOptions()
+            if (!isTesting)
             {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                TokenValidationParameters = new TokenValidationParameters()
+                app.UseIpRateLimiting();
+                app.UseJwtBearerAuthentication(new JwtBearerOptions()
                 {
-                    ValidIssuer = Configuration["Tokens:Issuer"],
-                    ValidAudience = Configuration["Tokens:Audience"],
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"])),
-                    ValidateLifetime = true
-                }
-            });
+                    AutomaticAuthenticate = true,
+                    AutomaticChallenge = true,
+                    TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidIssuer = Configuration["Tokens:Issuer"],
+                        ValidAudience = Configuration["Tokens:Audience"],
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"])),
+                        ValidateLifetime = true
+                    }
+                });
+            }
             app.UseMvc();
         }
     }
